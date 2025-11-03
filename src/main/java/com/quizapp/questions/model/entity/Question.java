@@ -6,11 +6,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "questions")
-@Data // включва @Getter, @Setter, @ToString, @EqualsAndHashCode
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -30,6 +31,6 @@ public class Question {
     @Column(name = "correct_answer", nullable = false)
     private String correctAnswer;
 
-    @ElementCollection
-    private List<String> options;
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<String> options = new ArrayList<>();
 }
