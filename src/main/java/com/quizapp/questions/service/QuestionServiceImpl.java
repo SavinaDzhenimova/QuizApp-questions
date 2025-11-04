@@ -39,6 +39,14 @@ public class QuestionServiceImpl implements QuestionService {
                 .orElse(null);
     }
 
+    @Override
+    public List<QuestionDTO> getQuestionsByCategory(Long categoryId) {
+        return this.questionRepository.findByCategoryId(categoryId)
+                .stream()
+                .map(this::questionToDTO)
+                .collect(Collectors.toList());
+    }
+
     private QuestionDTO questionToDTO(Question question) {
         return QuestionDTO.builder()
                 .id(question.getId())

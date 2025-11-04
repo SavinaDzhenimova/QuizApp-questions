@@ -44,6 +44,11 @@ public class QuestionController {
         return ResponseEntity.ok(questionDTO);
     }
 
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<QuestionDTO>> getQuestionsByCategory(@PathVariable Long categoryId) {
+        List<QuestionDTO> questionDTOs = this.questionService.getQuestionsByCategory(categoryId);
+        return ResponseEntity.ok(questionDTOs);
+    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteQuestion(@PathVariable Long id) {

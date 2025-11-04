@@ -15,4 +15,6 @@ public interface QuestionService {
     QuestionDTO getQuestionById(Long id);
 
     boolean deleteQuestionById(Long id);
+
+    List<QuestionDTO> getQuestionsByCategory(Long categoryId);
 }
