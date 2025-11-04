@@ -1,8 +1,8 @@
 package com.quizapp.questions.model.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,7 +14,7 @@ public class AddQuestionDTO {
     @NotBlank(message = "Въведете съдържание на въпроса!")
     private String questionText;
 
-    @NotNull
+    @NotBlank(message = "Въведете категория на въпроса!")
     private String category;
 
     @NotBlank(message = "Въведете правилен отговор на въпроса!")

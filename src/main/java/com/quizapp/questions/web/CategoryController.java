@@ -50,7 +50,7 @@ public class CategoryController {
 
         if (isDeleted) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Категория с ID " + id + " не е намерен, за да бъде премахната."));
+                    .body(Map.of("error", "Категория с ID " + id + " не е намерена, за да бъде премахната."));
         }
 
         return ResponseEntity.noContent().build();
