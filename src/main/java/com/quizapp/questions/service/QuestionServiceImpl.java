@@ -64,7 +64,7 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         Optional<Category> optionalCategory = this.categoryService
-                .findCategoryByName(addQuestionDTO.getCategory());
+                .findCategoryById(addQuestionDTO.getCategoryId());
 
         if (optionalCategory.isEmpty()) {
             return null;

@@ -37,6 +37,11 @@ public class CategoryServiceImpl implements CategoryService {
                 .orElse(null);
     }
 
+    @Override
+    public Optional<Category> findCategoryById(Long categoryId) {
+        return this.categoryRepository.findById(categoryId);
+    }
+
     private CategoryDTO categoryToDTO(Category category) {
         return CategoryDTO.builder()
                 .id(category.getId())
