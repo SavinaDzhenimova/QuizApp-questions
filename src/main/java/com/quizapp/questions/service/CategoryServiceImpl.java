@@ -2,12 +2,14 @@ package com.quizapp.questions.service;
 
 import com.quizapp.questions.model.dto.AddCategoryDTO;
 import com.quizapp.questions.model.dto.CategoryDTO;
+import com.quizapp.questions.model.dto.UpdateCategoryDTO;
 import com.quizapp.questions.model.entity.Category;
 import com.quizapp.questions.repository.CategoryRepository;
 import com.quizapp.questions.service.interfaces.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,6 +28,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<CategoryDTO> getAllCategories() {
         return this.categoryRepository.findAll().stream()
+                .sorted(Comparator.comparing(Category::getId))
                 .map(this::categoryToDTO)
                 .collect(Collectors.toList());
     }
@@ -57,6 +60,21 @@ public class CategoryServiceImpl implements CategoryService {
                 .name(addCategoryDTO.getName())
                 .description(addCategoryDTO.getDescription())
                 .build();
+
+        return this.categoryRepository.saveAndFlush(category);
+    }
+
+    @Override
+    public Category updateCategory(Long id, UpdateCategoryDTO updateCategoryDTO) {
+        Optional<Category> optionalCategory = this.categoryRepository.findById(id);
+
+        if (optionalCategory.isEmpty()) {
+            return null;
+        }
+
+        Category category = optionalCategory.get();
+
+        category.setDescription(updateCategoryDTO.getDescription());
 
         return this.categoryRepository.saveAndFlush(category);
     }

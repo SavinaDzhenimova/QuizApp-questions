@@ -2,6 +2,7 @@ package com.quizapp.questions.web;
 
 import com.quizapp.questions.model.dto.AddCategoryDTO;
 import com.quizapp.questions.model.dto.CategoryDTO;
+import com.quizapp.questions.model.dto.UpdateCategoryDTO;
 import com.quizapp.questions.model.entity.Category;
 import com.quizapp.questions.service.interfaces.CategoryService;
 import jakarta.validation.Valid;
@@ -26,12 +27,6 @@ public class CategoryController {
         return ResponseEntity.ok(categoryDTOs);
     }
 
-    @PostMapping
-    public ResponseEntity<Category> addCategory(@RequestBody @Valid AddCategoryDTO addCategoryDTO) {
-        Category savedCategory = this.categoryService.addCategory(addCategoryDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedCategory);
-    }
-
     @GetMapping("/id/{id}")
     public ResponseEntity<?> getCategoryById(@PathVariable Long id) {
         CategoryDTO categoryDTO = this.categoryService.getCategoryById(id);
@@ -42,6 +37,26 @@ public class CategoryController {
         }
 
         return ResponseEntity.ok(categoryDTO);
+    }
+
+    @PostMapping
+    public ResponseEntity<Category> addCategory(@RequestBody @Valid AddCategoryDTO addCategoryDTO) {
+        Category savedCategory = this.categoryService.addCategory(addCategoryDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedCategory);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateCategory(@PathVariable Long id,
+                                            @RequestBody @Valid UpdateCategoryDTO updateCategoryDTO) {
+
+        Category category = this.categoryService.updateCategory(id, updateCategoryDTO);
+
+        if (category == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Категория с ID " + id + " не е намерена."));
+        }
+
+        return ResponseEntity.ok(category);
     }
 
     @DeleteMapping("/{id}")
