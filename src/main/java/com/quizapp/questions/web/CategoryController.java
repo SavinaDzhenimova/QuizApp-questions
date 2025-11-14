@@ -32,13 +32,13 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedCategory);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/id/{id}")
     public ResponseEntity<?> getCategoryById(@PathVariable Long id) {
         CategoryDTO categoryDTO = this.categoryService.getCategoryById(id);
 
         if (categoryDTO == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Категория с ID " + id + " не е намерен."));
+                    .body(Map.of("error", "Категория с ID " + id + " не е намерена."));
         }
 
         return ResponseEntity.ok(categoryDTO);
