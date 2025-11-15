@@ -51,6 +51,7 @@ public class QuestionServiceImpl implements QuestionService {
         return QuestionDTO.builder()
                 .id(question.getId())
                 .questionText(question.getQuestionText())
+                .categoryName(question.getCategory().getName())
                 .correctAnswer(question.getCorrectAnswer())
                 .options(question.getOptions())
                 .build();
