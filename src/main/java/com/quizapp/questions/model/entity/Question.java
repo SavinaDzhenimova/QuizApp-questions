@@ -24,7 +24,7 @@ public class Question {
     @Column(name = "question_text", nullable = false)
     private String questionText;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 

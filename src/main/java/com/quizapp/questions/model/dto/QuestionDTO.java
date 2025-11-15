@@ -14,6 +14,8 @@ public class QuestionDTO {
 
     private String questionText;
 
+    private Long categoryId;
+
     private String categoryName;
 
     private String correctAnswer;
