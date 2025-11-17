@@ -4,6 +4,7 @@ import com.quizapp.questions.model.dto.AddCategoryDTO;
 import com.quizapp.questions.model.dto.CategoryDTO;
 import com.quizapp.questions.model.dto.UpdateCategoryDTO;
 import com.quizapp.questions.model.entity.Category;
+import com.quizapp.questions.model.enums.ApiStatus;
 import com.quizapp.questions.repository.CategoryRepository;
 import com.quizapp.questions.service.interfaces.CategoryService;
 import lombok.RequiredArgsConstructor;
@@ -65,18 +66,26 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Category updateCategory(Long id, UpdateCategoryDTO updateCategoryDTO) {
+    public ApiStatus updateCategory(Long id, UpdateCategoryDTO updateCategoryDTO) {
         Optional<Category> optionalCategory = this.categoryRepository.findById(id);
 
         if (optionalCategory.isEmpty()) {
-            return null;
+            return ApiStatus.NOT_FOUND;
         }
 
         Category category = optionalCategory.get();
+        boolean changed = false;
 
-        category.setDescription(updateCategoryDTO.getDescription());
+        if (!category.getDescription().equals(updateCategoryDTO.getDescription())) {
+            category.setDescription(updateCategoryDTO.getDescription());
+            changed = true;
+        }
 
-        return this.categoryRepository.saveAndFlush(category);
+        if (!changed) {
+            return ApiStatus.NO_CHANGES;
+        }
+
+        return ApiStatus.UPDATED;
     }
 
     @Override

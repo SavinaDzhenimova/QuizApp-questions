@@ -4,6 +4,7 @@ import com.quizapp.questions.model.dto.AddCategoryDTO;
 import com.quizapp.questions.model.dto.CategoryDTO;
 import com.quizapp.questions.model.dto.UpdateCategoryDTO;
 import com.quizapp.questions.model.entity.Category;
+import com.quizapp.questions.model.enums.ApiStatus;
 import com.quizapp.questions.service.interfaces.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -49,14 +50,14 @@ public class CategoryController {
     public ResponseEntity<?> updateCategory(@PathVariable Long id,
                                             @RequestBody @Valid UpdateCategoryDTO updateCategoryDTO) {
 
-        Category category = this.categoryService.updateCategory(id, updateCategoryDTO);
+        ApiStatus apiStatus = this.categoryService.updateCategory(id, updateCategoryDTO);
 
-        if (category == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Категория с ID " + id + " не е намерена."));
-        }
-
-        return ResponseEntity.ok(category);
+        return switch (apiStatus) {
+            case NOT_FOUND -> ResponseEntity.notFound().build();
+            case NO_CHANGES -> ResponseEntity.noContent().build();
+            case UPDATED -> ResponseEntity.ok().build();
+            default -> ResponseEntity.internalServerError().build();
+        };
     }
 
     @DeleteMapping("/{id}")

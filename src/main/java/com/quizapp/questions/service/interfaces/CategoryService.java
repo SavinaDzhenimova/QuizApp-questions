@@ -4,6 +4,7 @@ import com.quizapp.questions.model.dto.AddCategoryDTO;
 import com.quizapp.questions.model.dto.CategoryDTO;
 import com.quizapp.questions.model.dto.UpdateCategoryDTO;
 import com.quizapp.questions.model.entity.Category;
+import com.quizapp.questions.model.enums.ApiStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,5 +23,5 @@ public interface CategoryService {
 
     Optional<Category> findCategoryById(Long categoryId);
 
-    Category updateCategory(Long id, UpdateCategoryDTO updateCategoryDTO);
+    ApiStatus updateCategory(Long id, UpdateCategoryDTO updateCategoryDTO);
 }
