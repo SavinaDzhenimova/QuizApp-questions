@@ -1,5 +1,6 @@
 package com.quizapp.questions.service;
 
+import com.quizapp.questions.model.ApiStatus;
 import com.quizapp.questions.model.dto.AddQuestionDTO;
 import com.quizapp.questions.model.dto.QuestionDTO;
 import com.quizapp.questions.model.dto.UpdateQuestionDTO;
@@ -11,10 +12,7 @@ import com.quizapp.questions.service.interfaces.QuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -84,22 +82,38 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public QuestionDTO updateQuestion(Long id, UpdateQuestionDTO updateQuestionDTO) {
+    public ApiStatus updateQuestion(Long id, UpdateQuestionDTO updateQuestionDTO) {
         Optional<Question> optionalQuestion = this.questionRepository.findById(id);
 
         if (optionalQuestion.isEmpty()) {
-            return null;
+            return ApiStatus.NOT_FOUND;
         }
 
         Question question = optionalQuestion.get();
+        boolean changed = false;
 
-        question.setQuestionText(updateQuestionDTO.getQuestionText());
-        question.setCorrectAnswer(updateQuestionDTO.getCorrectAnswer());
-        question.setOptions(this.parseOptions(updateQuestionDTO.getOptions()));
+        if (!question.getQuestionText().equals(updateQuestionDTO.getQuestionText())) {
+            question.setQuestionText(updateQuestionDTO.getQuestionText());
+            changed = true;
+        }
 
-        Question updatedQuestion = this.questionRepository.saveAndFlush(question);
+        if (!question.getCorrectAnswer().equals(updateQuestionDTO.getCorrectAnswer())) {
+            question.setCorrectAnswer(updateQuestionDTO.getCorrectAnswer());
+            changed = true;
+        }
 
-        return this.questionToDTO(updatedQuestion);
+        List<String> updatedOptions = this.parseOptions(updateQuestionDTO.getOptions());
+        if (!new HashSet<>(question.getOptions()).equals(new HashSet<>(updatedOptions))) {
+            question.setOptions(updatedOptions);
+            changed = true;
+        }
+
+        if (!changed) {
+            return ApiStatus.NO_CHANGES;
+        }
+
+        this.questionRepository.saveAndFlush(question);
+        return ApiStatus.UPDATED;
     }
 
     private List<String> parseOptions(String options) {

@@ -1,5 +1,6 @@
 package com.quizapp.questions.service.interfaces;
 
+import com.quizapp.questions.model.ApiStatus;
 import com.quizapp.questions.model.dto.AddQuestionDTO;
 import com.quizapp.questions.model.dto.QuestionDTO;
 import com.quizapp.questions.model.dto.UpdateQuestionDTO;
@@ -15,7 +16,7 @@ public interface QuestionService {
 
     QuestionDTO getQuestionById(Long id);
 
-    QuestionDTO updateQuestion(Long id, UpdateQuestionDTO updateQuestionDTO);
+    ApiStatus updateQuestion(Long id, UpdateQuestionDTO updateQuestionDTO);
 
     boolean deleteQuestionById(Long id);
 

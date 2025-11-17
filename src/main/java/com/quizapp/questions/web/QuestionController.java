@@ -1,5 +1,6 @@
 package com.quizapp.questions.web;
 
+import com.quizapp.questions.model.ApiStatus;
 import com.quizapp.questions.model.dto.AddQuestionDTO;
 import com.quizapp.questions.model.dto.QuestionDTO;
 import com.quizapp.questions.model.dto.UpdateCategoryDTO;
@@ -56,14 +57,15 @@ public class QuestionController {
     public ResponseEntity<?> updateQuestion(@PathVariable Long id,
                                             @RequestBody @Valid UpdateQuestionDTO updateQuestionDTO) {
 
-        QuestionDTO questionDTO = this.questionService.updateQuestion(id, updateQuestionDTO);
+        ApiStatus apiStatus = this.questionService.updateQuestion(id, updateQuestionDTO);
 
-        if (questionDTO == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Въпросът с ID " + id + " не е намерен, за да бъде променен."));
+        switch (apiStatus) {
+            case NOT_FOUND -> ResponseEntity.notFound().build();
+            case NO_CHANGES -> ResponseEntity.noContent().build();
+            case UPDATED -> ResponseEntity.ok().build();
         }
 
-        return ResponseEntity.ok(questionDTO);
+        return ResponseEntity.internalServerError().build();
     }
 
     @DeleteMapping("/{id}")
