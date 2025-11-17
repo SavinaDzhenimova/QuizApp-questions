@@ -2,6 +2,8 @@ package com.quizapp.questions.web;
 
 import com.quizapp.questions.model.dto.AddQuestionDTO;
 import com.quizapp.questions.model.dto.QuestionDTO;
+import com.quizapp.questions.model.dto.UpdateCategoryDTO;
+import com.quizapp.questions.model.dto.UpdateQuestionDTO;
 import com.quizapp.questions.model.entity.Question;
 import com.quizapp.questions.service.interfaces.QuestionService;
 import jakarta.validation.Valid;
@@ -26,12 +28,6 @@ public class QuestionController {
         return ResponseEntity.ok(questionDTOs);
     }
 
-    @PostMapping
-    public ResponseEntity<?> addQuestion(@RequestBody @Valid AddQuestionDTO addQuestionDTO) {
-        Question savedQuestion = questionService.addQuestion(addQuestionDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedQuestion);
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<?> getQuestionById(@PathVariable Long id) {
         QuestionDTO questionDTO = this.questionService.getQuestionById(id);
@@ -48,6 +44,26 @@ public class QuestionController {
     public ResponseEntity<List<QuestionDTO>> getQuestionsByCategory(@PathVariable Long categoryId) {
         List<QuestionDTO> questionDTOs = this.questionService.getQuestionsByCategory(categoryId);
         return ResponseEntity.ok(questionDTOs);
+    }
+
+    @PostMapping
+    public ResponseEntity<?> addQuestion(@RequestBody @Valid AddQuestionDTO addQuestionDTO) {
+        Question savedQuestion = questionService.addQuestion(addQuestionDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedQuestion);
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateQuestion(@PathVariable Long id,
+                                            @RequestBody @Valid UpdateQuestionDTO updateQuestionDTO) {
+
+        QuestionDTO questionDTO = this.questionService.updateQuestion(id, updateQuestionDTO);
+
+        if (questionDTO == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Въпросът с ID " + id + " не е намерен, за да бъде променен."));
+        }
+
+        return ResponseEntity.ok(questionDTO);
     }
 
     @DeleteMapping("/{id}")

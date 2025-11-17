@@ -2,6 +2,7 @@ package com.quizapp.questions.service;
 
 import com.quizapp.questions.model.dto.AddQuestionDTO;
 import com.quizapp.questions.model.dto.QuestionDTO;
+import com.quizapp.questions.model.dto.UpdateQuestionDTO;
 import com.quizapp.questions.model.entity.Category;
 import com.quizapp.questions.model.entity.Question;
 import com.quizapp.questions.repository.QuestionRepository;
@@ -80,6 +81,25 @@ public class QuestionServiceImpl implements QuestionService {
                 .build();
 
         return this.questionRepository.saveAndFlush(question);
+    }
+
+    @Override
+    public QuestionDTO updateQuestion(Long id, UpdateQuestionDTO updateQuestionDTO) {
+        Optional<Question> optionalQuestion = this.questionRepository.findById(id);
+
+        if (optionalQuestion.isEmpty()) {
+            return null;
+        }
+
+        Question question = optionalQuestion.get();
+
+        question.setQuestionText(updateQuestionDTO.getQuestionText());
+        question.setCorrectAnswer(updateQuestionDTO.getCorrectAnswer());
+        question.setOptions(this.parseOptions(updateQuestionDTO.getOptions()));
+
+        Question updatedQuestion = this.questionRepository.saveAndFlush(question);
+
+        return this.questionToDTO(updatedQuestion);
     }
 
     private List<String> parseOptions(String options) {
