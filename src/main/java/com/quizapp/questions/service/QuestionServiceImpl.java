@@ -1,5 +1,6 @@
 package com.quizapp.questions.service;
 
+import com.quizapp.questions.model.dto.QuestionPageDTO;
 import com.quizapp.questions.model.enums.ApiStatus;
 import com.quizapp.questions.model.dto.AddQuestionDTO;
 import com.quizapp.questions.model.dto.QuestionDTO;
@@ -11,7 +12,6 @@ import com.quizapp.questions.service.interfaces.CategoryService;
 import com.quizapp.questions.service.interfaces.QuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -27,14 +27,20 @@ public class QuestionServiceImpl implements QuestionService {
     private final CategoryService categoryService;
 
     @Override
-    public Page<QuestionDTO> getAllQuestions(Pageable pageable) {
+    public QuestionPageDTO<QuestionDTO> getAllQuestions(Pageable pageable) {
         Page<Question> questionsPage = this.questionRepository.findAll(pageable);
 
-        List<QuestionDTO> questionDTOs = questionsPage.stream()
+        List<QuestionDTO> questionDTOs = questionsPage.getContent().stream()
                 .map(this::questionToDTO)
                 .toList();
 
-        return new PageImpl<>(questionDTOs, pageable, questionsPage.getTotalElements());
+        return QuestionPageDTO.<QuestionDTO>builder()
+                .questions(questionDTOs)
+                .totalPages(questionsPage.getTotalPages())
+                .totalElements(questionsPage.getTotalElements())
+                .currentPage(questionsPage.getNumber())
+                .size(questionsPage.getSize())
+                .build();
     }
 
     @Override

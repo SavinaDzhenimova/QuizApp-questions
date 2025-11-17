@@ -1,5 +1,6 @@
 package com.quizapp.questions.web;
 
+import com.quizapp.questions.model.dto.QuestionPageDTO;
 import com.quizapp.questions.model.enums.ApiStatus;
 import com.quizapp.questions.model.dto.AddQuestionDTO;
 import com.quizapp.questions.model.dto.QuestionDTO;
@@ -27,13 +28,13 @@ public class QuestionController {
     private final QuestionService questionService;
 
     @GetMapping
-    public ResponseEntity<Page<QuestionDTO>> getAllQuestions(@RequestParam(defaultValue = "0") int page,
-                                                             @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<QuestionPageDTO<QuestionDTO>> getAllQuestions(@RequestParam(defaultValue = "0") int page,
+                                                                        @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id"));
-        Page<QuestionDTO> questionPage = questionService.getAllQuestions(pageable);
+        QuestionPageDTO<QuestionDTO> pageDTO = questionService.getAllQuestions(pageable);
 
-        return ResponseEntity.ok(questionPage);
+        return ResponseEntity.ok(pageDTO);
     }
 
     @GetMapping("/{id}")
