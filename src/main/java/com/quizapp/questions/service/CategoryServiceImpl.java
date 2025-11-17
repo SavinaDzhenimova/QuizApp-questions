@@ -85,6 +85,7 @@ public class CategoryServiceImpl implements CategoryService {
             return ApiStatus.NO_CHANGES;
         }
 
+        this.categoryRepository.saveAndFlush(category);
         return ApiStatus.UPDATED;
     }
 
