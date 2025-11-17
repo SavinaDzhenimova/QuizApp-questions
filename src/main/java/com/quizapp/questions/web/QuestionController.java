@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -32,8 +34,13 @@ public class QuestionController {
                                                                         @RequestParam(required = false) String questionText,
                                                                         @RequestParam(required = false) Long categoryId) {
 
+        String decodedText = "";
+        if (questionText != null) {
+            decodedText = URLDecoder.decode(questionText, StandardCharsets.UTF_8);
+        }
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("id"));
-        QuestionPageDTO<QuestionDTO> pageDTO = questionService.getAllQuestions(questionText, categoryId, pageable);
+        QuestionPageDTO<QuestionDTO> pageDTO = questionService.getAllQuestions(decodedText, categoryId, pageable);
 
         return ResponseEntity.ok(pageDTO);
     }

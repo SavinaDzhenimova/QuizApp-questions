@@ -9,7 +9,7 @@ public class QuestionSpecifications {
         return (root, query, cb) ->
                 text == null || text.isBlank()
                         ? null
-                        : cb.like(cb.lower(root.get("questionText")), "%" + text.toLowerCase() + "%");
+                        : cb.like(cb.lower(root.get("questionText")), "%" + text.trim().toLowerCase() + "%");
     }
 
     public static Specification<Question> hasCategory(Long categoryId) {
