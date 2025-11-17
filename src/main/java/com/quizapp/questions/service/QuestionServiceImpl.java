@@ -31,7 +31,6 @@ public class QuestionServiceImpl implements QuestionService {
         Page<Question> questionsPage = this.questionRepository.findAll(pageable);
 
         List<QuestionDTO> questionDTOs = questionsPage.stream()
-                .sorted(Comparator.comparing(Question::getId))
                 .map(this::questionToDTO)
                 .toList();
 
