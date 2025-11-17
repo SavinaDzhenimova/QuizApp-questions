@@ -8,6 +8,9 @@ import com.quizapp.questions.model.entity.Question;
 import com.quizapp.questions.service.interfaces.QuestionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,9 +26,13 @@ public class QuestionController {
     private final QuestionService questionService;
 
     @GetMapping
-    public ResponseEntity<List<QuestionDTO>> getAllQuestions() {
-        List<QuestionDTO> questionDTOs = this.questionService.getAllQuestions();
-        return ResponseEntity.ok(questionDTOs);
+    public ResponseEntity<List<QuestionDTO>> getAllQuestions(@RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<QuestionDTO> questions = this.questionService.getAllQuestions(pageable);
+
+        return ResponseEntity.ok(questions.getContent());
     }
 
     @GetMapping("/{id}")
@@ -52,7 +59,7 @@ public class QuestionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedQuestion);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<?> updateQuestion(@PathVariable Long id,
                                             @RequestBody @Valid UpdateQuestionDTO updateQuestionDTO) {
 

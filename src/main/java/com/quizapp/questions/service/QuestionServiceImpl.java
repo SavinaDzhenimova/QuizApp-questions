@@ -10,6 +10,9 @@ import com.quizapp.questions.repository.QuestionRepository;
 import com.quizapp.questions.service.interfaces.CategoryService;
 import com.quizapp.questions.service.interfaces.QuestionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -24,11 +27,15 @@ public class QuestionServiceImpl implements QuestionService {
     private final CategoryService categoryService;
 
     @Override
-    public List<QuestionDTO> getAllQuestions() {
-        return this.questionRepository.findAll()
-                .stream()
+    public Page<QuestionDTO> getAllQuestions(Pageable pageable) {
+        Page<Question> questionsPage = this.questionRepository.findAll(pageable);
+
+        List<QuestionDTO> questionDTOs = questionsPage.stream()
+                .sorted(Comparator.comparing(Question::getId))
                 .map(this::questionToDTO)
-                .collect(Collectors.toList());
+                .toList();
+
+        return new PageImpl<>(questionDTOs, pageable, questionsPage.getTotalElements());
     }
 
     @Override
