@@ -9,7 +9,6 @@ import com.quizapp.questions.model.entity.Question;
 import com.quizapp.questions.service.interfaces.QuestionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -29,10 +28,12 @@ public class QuestionController {
 
     @GetMapping
     public ResponseEntity<QuestionPageDTO<QuestionDTO>> getAllQuestions(@RequestParam(defaultValue = "0") int page,
-                                                                        @RequestParam(defaultValue = "10") int size) {
+                                                                        @RequestParam(defaultValue = "10") int size,
+                                                                        @RequestParam(required = false) String questionText,
+                                                                        @RequestParam(required = false) Long categoryId) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id"));
-        QuestionPageDTO<QuestionDTO> pageDTO = questionService.getAllQuestions(pageable);
+        QuestionPageDTO<QuestionDTO> pageDTO = questionService.getAllQuestions(questionText, categoryId, pageable);
 
         return ResponseEntity.ok(pageDTO);
     }

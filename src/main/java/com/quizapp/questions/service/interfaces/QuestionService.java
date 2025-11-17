@@ -14,7 +14,7 @@ public interface QuestionService {
 
     Question addQuestion(AddQuestionDTO addQuestionDTO);
 
-    QuestionPageDTO<QuestionDTO> getAllQuestions(Pageable pageable);
+    QuestionPageDTO<QuestionDTO> getAllQuestions(String questionText, Long categoryId, Pageable pageable);
 
     QuestionDTO getQuestionById(Long id);
 

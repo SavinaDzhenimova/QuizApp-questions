@@ -8,11 +8,13 @@ import com.quizapp.questions.model.dto.UpdateQuestionDTO;
 import com.quizapp.questions.model.entity.Category;
 import com.quizapp.questions.model.entity.Question;
 import com.quizapp.questions.repository.QuestionRepository;
+import com.quizapp.questions.repository.spec.QuestionSpecifications;
 import com.quizapp.questions.service.interfaces.CategoryService;
 import com.quizapp.questions.service.interfaces.QuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -27,8 +29,13 @@ public class QuestionServiceImpl implements QuestionService {
     private final CategoryService categoryService;
 
     @Override
-    public QuestionPageDTO<QuestionDTO> getAllQuestions(Pageable pageable) {
-        Page<Question> questionsPage = this.questionRepository.findAll(pageable);
+    public QuestionPageDTO<QuestionDTO> getAllQuestions(String questionText, Long categoryId, Pageable pageable) {
+
+        Specification<Question> spec = Specification
+                .allOf(QuestionSpecifications.hasText(questionText))
+                .and(QuestionSpecifications.hasCategory(categoryId));
+
+        Page<Question> questionsPage = this.questionRepository.findAll(spec, pageable);
 
         List<QuestionDTO> questionDTOs = questionsPage.getContent().stream()
                 .map(this::questionToDTO)
