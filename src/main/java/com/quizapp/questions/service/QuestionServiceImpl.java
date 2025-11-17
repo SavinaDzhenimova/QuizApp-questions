@@ -1,6 +1,6 @@
 package com.quizapp.questions.service;
 
-import com.quizapp.questions.model.ApiStatus;
+import com.quizapp.questions.model.enums.ApiStatus;
 import com.quizapp.questions.model.dto.AddQuestionDTO;
 import com.quizapp.questions.model.dto.QuestionDTO;
 import com.quizapp.questions.model.dto.UpdateQuestionDTO;

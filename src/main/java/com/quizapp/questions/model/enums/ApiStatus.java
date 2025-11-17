@@ -1,4 +1,4 @@
-package com.quizapp.questions.model;
+package com.quizapp.questions.model.enums;
 
 public enum ApiStatus {
     SUCCESS,

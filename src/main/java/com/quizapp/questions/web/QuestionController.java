@@ -1,9 +1,8 @@
 package com.quizapp.questions.web;
 
-import com.quizapp.questions.model.ApiStatus;
+import com.quizapp.questions.model.enums.ApiStatus;
 import com.quizapp.questions.model.dto.AddQuestionDTO;
 import com.quizapp.questions.model.dto.QuestionDTO;
-import com.quizapp.questions.model.dto.UpdateCategoryDTO;
 import com.quizapp.questions.model.dto.UpdateQuestionDTO;
 import com.quizapp.questions.model.entity.Question;
 import com.quizapp.questions.service.interfaces.QuestionService;
@@ -59,13 +58,12 @@ public class QuestionController {
 
         ApiStatus apiStatus = this.questionService.updateQuestion(id, updateQuestionDTO);
 
-        switch (apiStatus) {
+        return switch (apiStatus) {
             case NOT_FOUND -> ResponseEntity.notFound().build();
             case NO_CHANGES -> ResponseEntity.noContent().build();
             case UPDATED -> ResponseEntity.ok().build();
-        }
-
-        return ResponseEntity.internalServerError().build();
+            default -> ResponseEntity.internalServerError().build();
+        };
     }
 
     @DeleteMapping("/{id}")
