@@ -65,8 +65,14 @@ public class QuestionController {
 
     @PostMapping
     public ResponseEntity<?> addQuestion(@RequestBody @Valid AddQuestionDTO addQuestionDTO) {
-        Question savedQuestion = questionService.addQuestion(addQuestionDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedQuestion);
+        ApiStatus apiStatus = questionService.addQuestion(addQuestionDTO);
+
+        return switch (apiStatus) {
+            case CREATED -> ResponseEntity.status(HttpStatus.CREATED).build();
+            case NOT_FOUND -> ResponseEntity.notFound().build();
+            case VALIDATION_ERROR -> ResponseEntity.badRequest().build();
+            default -> ResponseEntity.internalServerError().build();
+        };
     }
 
     @PutMapping("/{id}")

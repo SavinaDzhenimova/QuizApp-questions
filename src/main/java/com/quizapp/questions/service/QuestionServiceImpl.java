@@ -77,17 +77,17 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public Question addQuestion(AddQuestionDTO addQuestionDTO) {
+    public ApiStatus addQuestion(AddQuestionDTO addQuestionDTO) {
 
         if (addQuestionDTO == null) {
-            throw new RuntimeException("Не е намерен въпрос!");
+            return ApiStatus.VALIDATION_ERROR;
         }
 
         Optional<Category> optionalCategory = this.categoryService
                 .findCategoryById(addQuestionDTO.getCategoryId());
 
         if (optionalCategory.isEmpty()) {
-            return null;
+            return ApiStatus.NOT_FOUND;
         }
 
         Question question = Question.builder()
@@ -97,7 +97,8 @@ public class QuestionServiceImpl implements QuestionService {
                 .options(this.parseOptions(addQuestionDTO.getOptions()))
                 .build();
 
-        return this.questionRepository.saveAndFlush(question);
+        this.questionRepository.saveAndFlush(question);
+        return ApiStatus.CREATED;
     }
 
     @Override

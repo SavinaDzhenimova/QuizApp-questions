@@ -5,14 +5,13 @@ import com.quizapp.questions.model.enums.ApiStatus;
 import com.quizapp.questions.model.dto.AddQuestionDTO;
 import com.quizapp.questions.model.dto.QuestionDTO;
 import com.quizapp.questions.model.dto.UpdateQuestionDTO;
-import com.quizapp.questions.model.entity.Question;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface QuestionService {
 
-    Question addQuestion(AddQuestionDTO addQuestionDTO);
+    ApiStatus addQuestion(AddQuestionDTO addQuestionDTO);
 
     QuestionPageDTO<QuestionDTO> getAllQuestions(String questionText, Long categoryId, Pageable pageable);
 
