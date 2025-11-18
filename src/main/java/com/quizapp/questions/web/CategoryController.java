@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @RestController
@@ -23,10 +25,16 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<CategoryPageDTO> getAllCategories(@RequestParam(defaultValue = "0") int page,
-                                                            @RequestParam(defaultValue = "10") int size) {
+                                                            @RequestParam(defaultValue = "10") int size,
+                                                            @RequestParam(required = false) String categoryName) {
+
+        String decodedText = "";
+        if (categoryName != null) {
+            decodedText = URLDecoder.decode(categoryName, StandardCharsets.UTF_8);
+        }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id"));
-        CategoryPageDTO categoryPageDTO = this.categoryService.getAllCategories(pageable);
+        CategoryPageDTO categoryPageDTO = this.categoryService.getAllCategories(decodedText, pageable);
 
         return ResponseEntity.ok(categoryPageDTO);
     }

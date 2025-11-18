@@ -18,7 +18,7 @@ public interface CategoryService {
 
     boolean deleteCategoryById(Long id);
 
-    CategoryPageDTO getAllCategories(Pageable pageable);
+    CategoryPageDTO getAllCategories(String categoryName, Pageable pageable);
 
     CategoryDTO getCategoryById(Long id);
 
