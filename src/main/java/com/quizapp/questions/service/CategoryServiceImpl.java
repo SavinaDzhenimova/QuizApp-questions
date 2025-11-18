@@ -5,11 +5,9 @@ import com.quizapp.questions.model.dto.CategoryDTO;
 import com.quizapp.questions.model.dto.CategoryPageDTO;
 import com.quizapp.questions.model.dto.UpdateCategoryDTO;
 import com.quizapp.questions.model.entity.Category;
-import com.quizapp.questions.model.entity.Question;
 import com.quizapp.questions.model.enums.ApiStatus;
 import com.quizapp.questions.repository.CategoryRepository;
 import com.quizapp.questions.repository.spec.CategorySpecifications;
-import com.quizapp.questions.repository.spec.QuestionSpecifications;
 import com.quizapp.questions.service.interfaces.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -77,6 +75,12 @@ public class CategoryServiceImpl implements CategoryService {
 
         if (addCategoryDTO == null) {
             return ApiStatus.VALIDATION_ERROR;
+        }
+
+        Optional<Category> optionalCategory = this.categoryRepository.findByName(addCategoryDTO.getName());
+
+        if (optionalCategory.isPresent()) {
+            return ApiStatus.CONFLICT;
         }
 
         Category category = Category.builder()

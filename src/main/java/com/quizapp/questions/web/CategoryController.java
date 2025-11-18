@@ -57,6 +57,7 @@ public class CategoryController {
 
         return switch (apiStatus) {
             case INVALID_REQUEST -> ResponseEntity.badRequest().build();
+            case CONFLICT -> ResponseEntity.status(HttpStatus.CONFLICT).build();
             case CREATED -> ResponseEntity.status(HttpStatus.CREATED).build();
             default -> ResponseEntity.internalServerError().build();
         };
