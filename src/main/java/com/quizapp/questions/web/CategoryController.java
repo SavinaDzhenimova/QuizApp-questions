@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -21,12 +20,6 @@ import java.util.Map;
 public class CategoryController {
 
     private final CategoryService categoryService;
-
-    @GetMapping("/all")
-    public ResponseEntity<List<CategoryDTO>> getAllCategories() {
-        List<CategoryDTO> allCategories = this.categoryService.getAllCategories();
-        return ResponseEntity.ok(allCategories);
-    }
 
     @GetMapping
     public ResponseEntity<CategoryPageDTO> getAllCategories(@RequestParam(defaultValue = "0") int page,

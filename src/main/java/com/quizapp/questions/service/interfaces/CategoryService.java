@@ -8,7 +8,6 @@ import com.quizapp.questions.model.entity.Category;
 import com.quizapp.questions.model.enums.ApiStatus;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface CategoryService {
@@ -18,8 +17,6 @@ public interface CategoryService {
     ApiStatus addCategory(AddCategoryDTO addCategoryDTO);
 
     boolean deleteCategoryById(Long id);
-
-    List<CategoryDTO> getAllCategories();
 
     CategoryPageDTO getAllCategories(Pageable pageable);
 
