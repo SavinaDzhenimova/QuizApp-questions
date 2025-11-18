@@ -13,7 +13,7 @@ public interface CategoryService {
 
     Optional<Category> findCategoryByName(String name);
 
-    Category addCategory(AddCategoryDTO addCategoryDTO);
+    ApiStatus addCategory(AddCategoryDTO addCategoryDTO);
 
     boolean deleteCategoryById(Long id);
 

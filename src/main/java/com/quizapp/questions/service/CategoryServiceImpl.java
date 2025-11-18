@@ -55,14 +55,19 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Category addCategory(AddCategoryDTO addCategoryDTO) {
+    public ApiStatus addCategory(AddCategoryDTO addCategoryDTO) {
+
+        if (addCategoryDTO == null) {
+            return ApiStatus.VALIDATION_ERROR;
+        }
 
         Category category = Category.builder()
                 .name(addCategoryDTO.getName())
                 .description(addCategoryDTO.getDescription())
                 .build();
 
-        return this.categoryRepository.saveAndFlush(category);
+        this.categoryRepository.saveAndFlush(category);
+        return ApiStatus.CREATED;
     }
 
     @Override

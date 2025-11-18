@@ -41,9 +41,14 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<Category> addCategory(@RequestBody @Valid AddCategoryDTO addCategoryDTO) {
-        Category savedCategory = this.categoryService.addCategory(addCategoryDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedCategory);
+    public ResponseEntity<?> addCategory(@RequestBody @Valid AddCategoryDTO addCategoryDTO) {
+        ApiStatus apiStatus = this.categoryService.addCategory(addCategoryDTO);
+
+        return switch (apiStatus) {
+            case INVALID_REQUEST -> ResponseEntity.badRequest().build();
+            case CREATED -> ResponseEntity.status(HttpStatus.CREATED).build();
+            default -> ResponseEntity.internalServerError().build();
+        };
     }
 
     @PutMapping("/{id}")
