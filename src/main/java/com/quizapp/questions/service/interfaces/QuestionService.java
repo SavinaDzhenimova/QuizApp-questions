@@ -13,7 +13,7 @@ public interface QuestionService {
 
     ApiStatus addQuestion(AddQuestionDTO addQuestionDTO);
 
-    QuestionPageDTO<QuestionDTO> getAllQuestions(String questionText, Long categoryId, Pageable pageable);
+    QuestionPageDTO getAllQuestions(String questionText, Long categoryId, Pageable pageable);
 
     QuestionDTO getQuestionById(Long id);
 

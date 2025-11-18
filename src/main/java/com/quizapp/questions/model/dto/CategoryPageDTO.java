@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class QuestionPageDTO extends PageDTO {
+public class CategoryPageDTO extends PageDTO {
 
-    private List<QuestionDTO> questions;
+    private List<CategoryDTO> categories;
 }

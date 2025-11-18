@@ -5,7 +5,6 @@ import com.quizapp.questions.model.enums.ApiStatus;
 import com.quizapp.questions.model.dto.AddQuestionDTO;
 import com.quizapp.questions.model.dto.QuestionDTO;
 import com.quizapp.questions.model.dto.UpdateQuestionDTO;
-import com.quizapp.questions.model.entity.Question;
 import com.quizapp.questions.service.interfaces.QuestionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,10 +28,10 @@ public class QuestionController {
     private final QuestionService questionService;
 
     @GetMapping
-    public ResponseEntity<QuestionPageDTO<QuestionDTO>> getAllQuestions(@RequestParam(defaultValue = "0") int page,
-                                                                        @RequestParam(defaultValue = "10") int size,
-                                                                        @RequestParam(required = false) String questionText,
-                                                                        @RequestParam(required = false) Long categoryId) {
+    public ResponseEntity<QuestionPageDTO> getAllQuestions(@RequestParam(defaultValue = "0") int page,
+                                                           @RequestParam(defaultValue = "10") int size,
+                                                           @RequestParam(required = false) String questionText,
+                                                           @RequestParam(required = false) Long categoryId) {
 
         String decodedText = "";
         if (questionText != null) {
@@ -40,9 +39,9 @@ public class QuestionController {
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id"));
-        QuestionPageDTO<QuestionDTO> pageDTO = questionService.getAllQuestions(decodedText, categoryId, pageable);
+        QuestionPageDTO questionPageDTO = questionService.getAllQuestions(decodedText, categoryId, pageable);
 
-        return ResponseEntity.ok(pageDTO);
+        return ResponseEntity.ok(questionPageDTO);
     }
 
     @GetMapping("/{id}")

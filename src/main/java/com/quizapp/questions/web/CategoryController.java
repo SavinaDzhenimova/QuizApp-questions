@@ -1,13 +1,14 @@
 package com.quizapp.questions.web;
 
-import com.quizapp.questions.model.dto.AddCategoryDTO;
-import com.quizapp.questions.model.dto.CategoryDTO;
-import com.quizapp.questions.model.dto.UpdateCategoryDTO;
+import com.quizapp.questions.model.dto.*;
 import com.quizapp.questions.model.entity.Category;
 import com.quizapp.questions.model.enums.ApiStatus;
 import com.quizapp.questions.service.interfaces.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,9 +24,13 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public ResponseEntity<List<CategoryDTO>> getAllCategories() {
-        List<CategoryDTO> categoryDTOs = this.categoryService.getAllCategories();
-        return ResponseEntity.ok(categoryDTOs);
+    public ResponseEntity<CategoryPageDTO> getAllCategories(@RequestParam(defaultValue = "0") int page,
+                                                              @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id"));
+        CategoryPageDTO categoryPageDTO = this.categoryService.getAllCategories(pageable);
+
+        return ResponseEntity.ok(categoryPageDTO);
     }
 
     @GetMapping("/{id}")

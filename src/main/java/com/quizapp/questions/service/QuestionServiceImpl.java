@@ -29,7 +29,7 @@ public class QuestionServiceImpl implements QuestionService {
     private final CategoryService categoryService;
 
     @Override
-    public QuestionPageDTO<QuestionDTO> getAllQuestions(String questionText, Long categoryId, Pageable pageable) {
+    public QuestionPageDTO getAllQuestions(String questionText, Long categoryId, Pageable pageable) {
 
         Specification<Question> spec = Specification
                 .allOf(QuestionSpecifications.hasText(questionText))
@@ -41,7 +41,7 @@ public class QuestionServiceImpl implements QuestionService {
                 .map(this::questionToDTO)
                 .toList();
 
-        return QuestionPageDTO.<QuestionDTO>builder()
+        return QuestionPageDTO.builder()
                 .questions(questionDTOs)
                 .totalPages(questionsPage.getTotalPages())
                 .totalElements(questionsPage.getTotalElements())
