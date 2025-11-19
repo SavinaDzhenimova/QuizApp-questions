@@ -1,7 +1,6 @@
 package com.quizapp.questions.web;
 
 import com.quizapp.questions.model.dto.QuestionPageDTO;
-import com.quizapp.questions.model.enums.ApiStatus;
 import com.quizapp.questions.model.dto.AddQuestionDTO;
 import com.quizapp.questions.model.dto.QuestionDTO;
 import com.quizapp.questions.model.dto.UpdateQuestionDTO;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/questions")
@@ -33,10 +31,9 @@ public class QuestionController {
                                                            @RequestParam(required = false) String questionText,
                                                            @RequestParam(required = false) Long categoryId) {
 
-        String decodedText = "";
-        if (questionText != null) {
-            decodedText = URLDecoder.decode(questionText, StandardCharsets.UTF_8);
-        }
+        String decodedText = questionText != null
+                ? URLDecoder.decode(questionText, StandardCharsets.UTF_8)
+                : "";
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id"));
         QuestionPageDTO questionPageDTO = questionService.getAllQuestions(decodedText, categoryId, pageable);
@@ -45,14 +42,8 @@ public class QuestionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getQuestionById(@PathVariable Long id) {
+    public ResponseEntity<QuestionDTO> getQuestionById(@PathVariable Long id) {
         QuestionDTO questionDTO = this.questionService.getQuestionById(id);
-
-        if (questionDTO == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Въпросът с ID " + id + " не е намерен."));
-        }
-
         return ResponseEntity.ok(questionDTO);
     }
 
@@ -63,40 +54,21 @@ public class QuestionController {
     }
 
     @PostMapping
-    public ResponseEntity<?> addQuestion(@RequestBody @Valid AddQuestionDTO addQuestionDTO) {
-        ApiStatus apiStatus = questionService.addQuestion(addQuestionDTO);
-
-        return switch (apiStatus) {
-            case CREATED -> ResponseEntity.status(HttpStatus.CREATED).build();
-            case NOT_FOUND -> ResponseEntity.notFound().build();
-            case VALIDATION_ERROR -> ResponseEntity.badRequest().build();
-            default -> ResponseEntity.internalServerError().build();
-        };
+    public ResponseEntity<Void> addQuestion(@RequestBody @Valid AddQuestionDTO addQuestionDTO) {
+        this.questionService.addQuestion(addQuestionDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateQuestion(@PathVariable Long id,
+    public ResponseEntity<Void> updateQuestion(@PathVariable Long id,
                                             @RequestBody @Valid UpdateQuestionDTO updateQuestionDTO) {
-
-        ApiStatus apiStatus = this.questionService.updateQuestion(id, updateQuestionDTO);
-
-        return switch (apiStatus) {
-            case NOT_FOUND -> ResponseEntity.notFound().build();
-            case NO_CHANGES -> ResponseEntity.noContent().build();
-            case UPDATED -> ResponseEntity.ok().build();
-            default -> ResponseEntity.internalServerError().build();
-        };
+        this.questionService.updateQuestion(id, updateQuestionDTO);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteQuestion(@PathVariable Long id) {
-        boolean isDeleted = this.questionService.deleteQuestionById(id);
-
-        if (!isDeleted) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Въпросът с ID " + id + " не е намерен, за да бъде премахнат."));
-        }
-
+        this.questionService.deleteQuestionById(id);
         return ResponseEntity.noContent().build();
     }
 }
