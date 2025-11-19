@@ -1,4 +1,4 @@
-package com.quizapp.questions.web;
+package com.quizapp.questions.exception;
 
 import com.quizapp.questions.model.records.ApiError;
 import org.springframework.dao.DataIntegrityViolationException;
