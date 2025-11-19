@@ -1,7 +1,9 @@
 package com.quizapp.questions.service;
 
+import com.quizapp.questions.exception.CategoryNotFoundException;
+import com.quizapp.questions.exception.NoChangesException;
+import com.quizapp.questions.exception.QuestionNotFoundException;
 import com.quizapp.questions.model.dto.QuestionPageDTO;
-import com.quizapp.questions.model.enums.ApiStatus;
 import com.quizapp.questions.model.dto.AddQuestionDTO;
 import com.quizapp.questions.model.dto.QuestionDTO;
 import com.quizapp.questions.model.dto.UpdateQuestionDTO;
@@ -11,6 +13,7 @@ import com.quizapp.questions.repository.QuestionRepository;
 import com.quizapp.questions.repository.spec.QuestionSpecifications;
 import com.quizapp.questions.service.interfaces.CategoryService;
 import com.quizapp.questions.service.interfaces.QuestionService;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +28,6 @@ import java.util.stream.Collectors;
 public class QuestionServiceImpl implements QuestionService {
 
     private final QuestionRepository questionRepository;
-
     private final CategoryService categoryService;
 
     @Override
@@ -54,11 +56,15 @@ public class QuestionServiceImpl implements QuestionService {
     public QuestionDTO getQuestionById(Long id) {
         return this.questionRepository.findById(id)
                 .map(this::questionToDTO)
-                .orElse(null);
+                .orElseThrow(() -> new QuestionNotFoundException(id));
     }
 
     @Override
     public List<QuestionDTO> getQuestionsByCategory(Long categoryId) {
+
+        this.categoryService.findCategoryById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
+
         return this.questionRepository.findByCategoryId(categoryId)
                 .stream()
                 .map(this::questionToDTO)
@@ -77,39 +83,31 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public ApiStatus addQuestion(AddQuestionDTO addQuestionDTO) {
+    public void addQuestion(AddQuestionDTO addQuestionDTO) {
 
         if (addQuestionDTO == null) {
-            return ApiStatus.VALIDATION_ERROR;
+            throw new ValidationException("Невалидни входни данни.");
         }
 
-        Optional<Category> optionalCategory = this.categoryService
-                .findCategoryById(addQuestionDTO.getCategoryId());
-
-        if (optionalCategory.isEmpty()) {
-            return ApiStatus.NOT_FOUND;
-        }
+        Category category = this.categoryService
+                .findCategoryById(addQuestionDTO.getCategoryId())
+                .orElseThrow(() -> new CategoryNotFoundException(addQuestionDTO.getCategoryId()));
 
         Question question = Question.builder()
                 .questionText(addQuestionDTO.getQuestionText())
                 .correctAnswer(addQuestionDTO.getCorrectAnswer())
-                .category(optionalCategory.get())
+                .category(category)
                 .options(this.parseOptions(addQuestionDTO.getOptions()))
                 .build();
 
         this.questionRepository.saveAndFlush(question);
-        return ApiStatus.CREATED;
     }
 
     @Override
-    public ApiStatus updateQuestion(Long id, UpdateQuestionDTO updateQuestionDTO) {
-        Optional<Question> optionalQuestion = this.questionRepository.findById(id);
+    public void updateQuestion(Long id, UpdateQuestionDTO updateQuestionDTO) {
+        Question question = this.questionRepository.findById(id)
+                .orElseThrow(() -> new QuestionNotFoundException(id));
 
-        if (optionalQuestion.isEmpty()) {
-            return ApiStatus.NOT_FOUND;
-        }
-
-        Question question = optionalQuestion.get();
         boolean changed = false;
 
         if (!question.getQuestionText().equals(updateQuestionDTO.getQuestionText())) {
@@ -129,11 +127,10 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         if (!changed) {
-            return ApiStatus.NO_CHANGES;
+            throw new NoChangesException("Няма промени за запазване.");
         }
 
         this.questionRepository.saveAndFlush(question);
-        return ApiStatus.UPDATED;
     }
 
     private List<String> parseOptions(String options) {
@@ -148,12 +145,11 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public boolean deleteQuestionById(Long id) {
+    public void deleteQuestionById(Long id) {
         if (!this.questionRepository.existsById(id)) {
-            return false;
+            throw new QuestionNotFoundException(id);
         }
 
         this.questionRepository.deleteById(id);
-        return true;
     }
 }

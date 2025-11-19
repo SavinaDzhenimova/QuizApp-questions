@@ -2,7 +2,7 @@ package com.quizapp.questions.service;
 
 import com.quizapp.questions.exception.CategoryNotFoundException;
 import com.quizapp.questions.exception.DuplicateResourceException;
-import com.quizapp.questions.exception.InvalidRequestException;
+import com.quizapp.questions.exception.NoChangesException;
 import com.quizapp.questions.model.dto.AddCategoryDTO;
 import com.quizapp.questions.model.dto.CategoryDTO;
 import com.quizapp.questions.model.dto.CategoryPageDTO;
@@ -11,6 +11,7 @@ import com.quizapp.questions.model.entity.Category;
 import com.quizapp.questions.repository.CategoryRepository;
 import com.quizapp.questions.repository.spec.CategorySpecifications;
 import com.quizapp.questions.service.interfaces.CategoryService;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -76,14 +77,13 @@ public class CategoryServiceImpl implements CategoryService {
     public void addCategory(AddCategoryDTO addCategoryDTO) {
 
         if (addCategoryDTO == null) {
-            throw new InvalidRequestException("Невалидни входни данни.");
+            throw new ValidationException("Невалидни входни данни.");
         }
 
-        Optional<Category> optionalCategory = this.categoryRepository.findByName(addCategoryDTO.getName());
-
-        if (optionalCategory.isPresent()) {
-            throw new DuplicateResourceException("Категория с име " + addCategoryDTO.getName() + " вече съществува.");
-        }
+        this.categoryRepository.findByName(addCategoryDTO.getName())
+                .ifPresent(category -> {
+                    throw new DuplicateResourceException("Категория с име " + addCategoryDTO.getName() + " вече съществува.");
+                });
 
         Category category = Category.builder()
                 .name(addCategoryDTO.getName())
@@ -106,7 +106,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         if (!changed) {
-            throw new InvalidRequestException("Няма промени за запазване.");
+            throw new NoChangesException("Няма промени за запазване.");
         }
 
         this.categoryRepository.saveAndFlush(category);

@@ -38,11 +38,11 @@ public class GlobalExceptionHandler {
                 "QUESTION_NOT_FOUND");
     }
 
-    @ExceptionHandler(InvalidRequestException.class)
-    public ProblemDetail handleInvalidRequest(InvalidRequestException ex, HttpServletRequest request) {
+    @ExceptionHandler(NoChangesException.class)
+    public ProblemDetail handleNoChanges(NoChangesException ex, HttpServletRequest request) {
 
-        return buildProblemDetail(HttpStatus.BAD_REQUEST, "Invalid request", ex.getMessage(), request,
-                "INVALID_REQUEST");
+        return buildProblemDetail(HttpStatus.BAD_REQUEST, "No changes", ex.getMessage(), request,
+                "NO_CHANGES");
     }
 
     @ExceptionHandler(ConflictException.class)
