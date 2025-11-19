@@ -1,11 +1,13 @@
 package com.quizapp.questions.service;
 
+import com.quizapp.questions.exception.CategoryNotFoundException;
+import com.quizapp.questions.exception.DuplicateResourceException;
+import com.quizapp.questions.exception.InvalidRequestException;
 import com.quizapp.questions.model.dto.AddCategoryDTO;
 import com.quizapp.questions.model.dto.CategoryDTO;
 import com.quizapp.questions.model.dto.CategoryPageDTO;
 import com.quizapp.questions.model.dto.UpdateCategoryDTO;
 import com.quizapp.questions.model.entity.Category;
-import com.quizapp.questions.model.enums.ApiStatus;
 import com.quizapp.questions.repository.CategoryRepository;
 import com.quizapp.questions.repository.spec.CategorySpecifications;
 import com.quizapp.questions.service.interfaces.CategoryService;
@@ -54,7 +56,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDTO getCategoryById(Long id) {
         return this.categoryRepository.findById(id)
                 .map(this::categoryToDTO)
-                .orElse(null);
+                .orElseThrow(() -> new CategoryNotFoundException(id));
     }
 
     @Override
@@ -71,16 +73,16 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public ApiStatus addCategory(AddCategoryDTO addCategoryDTO) {
+    public void addCategory(AddCategoryDTO addCategoryDTO) {
 
         if (addCategoryDTO == null) {
-            return ApiStatus.VALIDATION_ERROR;
+            throw new InvalidRequestException("Невалидни входни данни.");
         }
 
         Optional<Category> optionalCategory = this.categoryRepository.findByName(addCategoryDTO.getName());
 
         if (optionalCategory.isPresent()) {
-            return ApiStatus.CONFLICT;
+            throw new DuplicateResourceException("Категория с име " + addCategoryDTO.getName() + " вече съществува.");
         }
 
         Category category = Category.builder()
@@ -89,18 +91,13 @@ public class CategoryServiceImpl implements CategoryService {
                 .build();
 
         this.categoryRepository.saveAndFlush(category);
-        return ApiStatus.CREATED;
     }
 
     @Override
-    public ApiStatus updateCategory(Long id, UpdateCategoryDTO updateCategoryDTO) {
-        Optional<Category> optionalCategory = this.categoryRepository.findById(id);
+    public void updateCategory(Long id, UpdateCategoryDTO updateCategoryDTO) {
+        Category category = this.categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotFoundException(id));
 
-        if (optionalCategory.isEmpty()) {
-            return ApiStatus.NOT_FOUND;
-        }
-
-        Category category = optionalCategory.get();
         boolean changed = false;
 
         if (!category.getDescription().equals(updateCategoryDTO.getDescription())) {
@@ -109,20 +106,18 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         if (!changed) {
-            return ApiStatus.NO_CHANGES;
+            throw new InvalidRequestException("Няма промени за запазване.");
         }
 
         this.categoryRepository.saveAndFlush(category);
-        return ApiStatus.UPDATED;
     }
 
     @Override
-    public boolean deleteCategoryById(Long id) {
+    public void deleteCategoryById(Long id) {
         if (!this.categoryRepository.existsById(id)) {
-            return false;
+            throw new CategoryNotFoundException(id);
         }
 
         this.categoryRepository.deleteById(id);
-        return true;
     }
 }

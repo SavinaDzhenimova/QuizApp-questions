@@ -5,7 +5,6 @@ import com.quizapp.questions.model.dto.CategoryDTO;
 import com.quizapp.questions.model.dto.CategoryPageDTO;
 import com.quizapp.questions.model.dto.UpdateCategoryDTO;
 import com.quizapp.questions.model.entity.Category;
-import com.quizapp.questions.model.enums.ApiStatus;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
@@ -14,9 +13,9 @@ public interface CategoryService {
 
     Optional<Category> findCategoryByName(String name);
 
-    ApiStatus addCategory(AddCategoryDTO addCategoryDTO);
+    void addCategory(AddCategoryDTO addCategoryDTO);
 
-    boolean deleteCategoryById(Long id);
+    void deleteCategoryById(Long id);
 
     CategoryPageDTO getAllCategories(String categoryName, Pageable pageable);
 
@@ -24,5 +23,5 @@ public interface CategoryService {
 
     Optional<Category> findCategoryById(Long categoryId);
 
-    ApiStatus updateCategory(Long id, UpdateCategoryDTO updateCategoryDTO);
+    void updateCategory(Long id, UpdateCategoryDTO updateCategoryDTO);
 }
