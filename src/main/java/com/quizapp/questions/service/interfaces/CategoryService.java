@@ -15,8 +15,6 @@ public interface CategoryService {
 
     void addCategory(AddCategoryDTO addCategoryDTO);
 
-    void deleteCategoryById(Long id);
-
     CategoryPageDTO getAllCategories(String categoryName, Pageable pageable);
 
     CategoryDTO getCategoryById(Long id);

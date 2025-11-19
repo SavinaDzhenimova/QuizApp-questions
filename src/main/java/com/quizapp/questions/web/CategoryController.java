@@ -55,10 +55,4 @@ public class CategoryController {
         this.categoryService.updateCategory(id, updateCategoryDTO);
         return ResponseEntity.ok().build();
     }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
-        this.categoryService.deleteCategoryById(id);
-        return ResponseEntity.noContent().build();
-    }
 }

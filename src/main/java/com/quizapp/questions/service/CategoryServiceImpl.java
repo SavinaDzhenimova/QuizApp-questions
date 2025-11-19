@@ -111,13 +111,4 @@ public class CategoryServiceImpl implements CategoryService {
 
         this.categoryRepository.saveAndFlush(category);
     }
-
-    @Override
-    public void deleteCategoryById(Long id) {
-        if (!this.categoryRepository.existsById(id)) {
-            throw new CategoryNotFoundException(id);
-        }
-
-        this.categoryRepository.deleteById(id);
-    }
 }

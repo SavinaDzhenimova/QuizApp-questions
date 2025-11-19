@@ -65,10 +65,4 @@ public class QuestionController {
         this.questionService.updateQuestion(id, updateQuestionDTO);
         return ResponseEntity.ok().build();
     }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteQuestion(@PathVariable Long id) {
-        this.questionService.deleteQuestionById(id);
-        return ResponseEntity.noContent().build();
-    }
 }

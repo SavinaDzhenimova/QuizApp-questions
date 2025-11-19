@@ -143,13 +143,4 @@ public class QuestionServiceImpl implements QuestionService {
                 .filter(opt -> !opt.isEmpty())
                 .collect(Collectors.toList());
     }
-
-    @Override
-    public void deleteQuestionById(Long id) {
-        if (!this.questionRepository.existsById(id)) {
-            throw new QuestionNotFoundException(id);
-        }
-
-        this.questionRepository.deleteById(id);
-    }
 }

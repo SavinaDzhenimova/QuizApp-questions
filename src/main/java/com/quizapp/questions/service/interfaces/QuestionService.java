@@ -18,7 +18,5 @@ public interface QuestionService {
 
     void updateQuestion(Long id, UpdateQuestionDTO updateQuestionDTO);
 
-    void deleteQuestionById(Long id);
-
     List<QuestionDTO> getQuestionsByCategory(Long categoryId);
 }
