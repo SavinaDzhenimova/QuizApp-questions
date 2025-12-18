@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class AddQuestionDTO {
 
     @NotBlank(message = "Въведете съдържание на въпроса!")

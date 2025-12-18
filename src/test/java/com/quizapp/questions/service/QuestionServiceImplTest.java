@@ -3,6 +3,7 @@ package com.quizapp.questions.service;
 import com.quizapp.questions.exception.CategoryNotFoundException;
 import com.quizapp.questions.exception.QuestionNotFoundException;
 import com.quizapp.questions.model.dto.category.CategoryDTO;
+import com.quizapp.questions.model.dto.question.AddQuestionDTO;
 import com.quizapp.questions.model.dto.question.QuestionDTO;
 import com.quizapp.questions.model.dto.question.QuestionPageDTO;
 import com.quizapp.questions.model.entity.Category;
@@ -10,6 +11,7 @@ import com.quizapp.questions.model.entity.Question;
 import com.quizapp.questions.repository.CategoryRepository;
 import com.quizapp.questions.repository.QuestionRepository;
 import com.quizapp.questions.service.interfaces.CategoryService;
+import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +30,7 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class QuestionServiceImplTest {
@@ -161,5 +163,53 @@ public class QuestionServiceImplTest {
         Assertions.assertEquals("A", result.get(0).getCorrectAnswer());
         Assertions.assertNotNull(result.get(0).getOptions());
         Assertions.assertEquals(List.of("A", "B", "C", "D"), result.get(0).getOptions());
+    }
+
+    @Test
+    void addQuestion_ShouldThrowException_WhenInputDataIsNotValid() {
+        ValidationException exception = Assertions.assertThrows(ValidationException.class,
+                () -> this.questionService.addQuestion(null));
+
+        Assertions.assertEquals("Невалидни входни данни.", exception.getMessage());
+        verifyNoInteractions(this.mockCategoryService);
+        verifyNoInteractions(this.mockQuestionRepo);
+    }
+
+    @Test
+    void addQuestion_ShouldThrowException_WhenCategoryNotFound() {
+        AddQuestionDTO addQuestionDTO = AddQuestionDTO.builder()
+                .categoryId(5L)
+                .questionText("Question")
+                .correctAnswer("B")
+                .options("A, B, C, D")
+                .build();
+
+        when(this.mockCategoryService.findCategoryById(5L))
+                .thenReturn(Optional.empty());
+
+        CategoryNotFoundException exception = Assertions.assertThrows(CategoryNotFoundException.class,
+                () -> this.questionService.addQuestion(addQuestionDTO));
+
+        Assertions.assertEquals("Категория с id 5 не е намерена.", exception.getMessage());
+        verify(this.mockCategoryService, times(1)).findCategoryById(5L);
+        verifyNoInteractions(this.mockQuestionRepo);
+    }
+
+    @Test
+    void addQuestion_ShouldSaveQuestion_WhenCategoryFoundAndInputDataIsValid() {
+        AddQuestionDTO addQuestionDTO = AddQuestionDTO.builder()
+                .categoryId(1L)
+                .questionText("Question")
+                .correctAnswer("B")
+                .options("A, B, C, D")
+                .build();
+
+        when(this.mockCategoryService.findCategoryById(1L))
+                .thenReturn(Optional.of(this.category));
+
+        this.questionService.addQuestion(addQuestionDTO);
+
+        verify(this.mockCategoryService, times(1)).findCategoryById(1L);
+        verify(this.mockQuestionRepo, times(1)).saveAndFlush(any(Question.class));
     }
 }
