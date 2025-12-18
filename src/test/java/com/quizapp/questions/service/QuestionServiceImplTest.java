@@ -1,5 +1,9 @@
 package com.quizapp.questions.service;
 
+import com.quizapp.questions.exception.CategoryNotFoundException;
+import com.quizapp.questions.exception.QuestionNotFoundException;
+import com.quizapp.questions.model.dto.category.CategoryDTO;
+import com.quizapp.questions.model.dto.question.QuestionDTO;
 import com.quizapp.questions.model.dto.question.QuestionPageDTO;
 import com.quizapp.questions.model.entity.Category;
 import com.quizapp.questions.model.entity.Question;
@@ -20,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -96,5 +101,33 @@ public class QuestionServiceImplTest {
         Assertions.assertEquals(1, pageDTO.getTotalPages());
         Assertions.assertEquals(0L, pageDTO.getTotalElements());
         Assertions.assertEquals(0, pageDTO.getSize());
+    }
+
+    @Test
+    void getCategoryById_ShouldReturnCategoryDTO_WhenCategoryFound() {
+        when(this.mockQuestionRepo.findById(1L))
+                .thenReturn(Optional.of(this.question));
+
+        QuestionDTO result = this.questionService.getQuestionById(1L);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(1L, result.getId());
+        Assertions.assertEquals(1L, result.getCategoryId());
+        Assertions.assertEquals("Maths", result.getCategoryName());
+        Assertions.assertEquals("Question", result.getQuestionText());
+        Assertions.assertEquals("A", result.getCorrectAnswer());
+        Assertions.assertNotNull(result.getOptions());
+        Assertions.assertEquals(List.of("A", "B", "C", "D"), result.getOptions());
+    }
+
+    @Test
+    void getQuestionById_ShouldThrowException_WhenQuestionNotFound() {
+        when(this.mockQuestionRepo.findById(5L))
+                .thenReturn(Optional.empty());
+
+        QuestionNotFoundException exception = Assertions.assertThrows(QuestionNotFoundException.class,
+                () -> this.questionService.getQuestionById(5L));
+
+        Assertions.assertEquals("Въпрос с id 5 не е намерен.", exception.getMessage());
     }
 }
