@@ -1,11 +1,13 @@
 package com.quizapp.questions.service;
 
 import com.quizapp.questions.exception.CategoryNotFoundException;
+import com.quizapp.questions.exception.NoChangesException;
 import com.quizapp.questions.exception.QuestionNotFoundException;
 import com.quizapp.questions.model.dto.category.CategoryDTO;
 import com.quizapp.questions.model.dto.question.AddQuestionDTO;
 import com.quizapp.questions.model.dto.question.QuestionDTO;
 import com.quizapp.questions.model.dto.question.QuestionPageDTO;
+import com.quizapp.questions.model.dto.question.UpdateQuestionDTO;
 import com.quizapp.questions.model.entity.Category;
 import com.quizapp.questions.model.entity.Question;
 import com.quizapp.questions.repository.CategoryRepository;
@@ -210,6 +212,67 @@ public class QuestionServiceImplTest {
         this.questionService.addQuestion(addQuestionDTO);
 
         verify(this.mockCategoryService, times(1)).findCategoryById(1L);
+        verify(this.mockQuestionRepo, times(1)).saveAndFlush(any(Question.class));
+    }
+
+    @Test
+    void updateQuestion_ShouldThrowException_WhenQuestionNotFound() {
+        UpdateQuestionDTO updateQuestionDTO = UpdateQuestionDTO.builder()
+                .categoryName("Maths")
+                .questionText("Question")
+                .correctAnswer("B")
+                .options("A, B, C, D")
+                .build();
+
+        when(this.mockQuestionRepo.findById(5L))
+                .thenReturn(Optional.empty());
+
+        QuestionNotFoundException exception = Assertions.assertThrows(QuestionNotFoundException.class,
+                () -> this.questionService.updateQuestion(5L, updateQuestionDTO));
+
+        Assertions.assertEquals("Въпрос с id 5 не е намерен.", exception.getMessage());
+        verify(this.mockQuestionRepo, times(1)).findById(5L);
+        verify(this.mockQuestionRepo, never()).saveAndFlush(any(Question.class));
+    }
+
+    @Test
+    void updateQuestion_ShouldThrowException_WhenNoChanges() {
+        UpdateQuestionDTO updateQuestionDTO = UpdateQuestionDTO.builder()
+                .categoryName("Maths")
+                .questionText("Question")
+                .correctAnswer("A")
+                .options("A, B, C, D")
+                .build();
+
+        when(this.mockQuestionRepo.findById(1L))
+                .thenReturn(Optional.of(this.question));
+
+        NoChangesException exception = Assertions.assertThrows(NoChangesException.class,
+                () -> this.questionService.updateQuestion(1L, updateQuestionDTO));
+
+        Assertions.assertEquals("Няма промени за запазване.", exception.getMessage());
+        verify(this.mockQuestionRepo, times(1)).findById(1L);
+        verify(this.mockQuestionRepo, never()).saveAndFlush(any(Question.class));
+    }
+
+    @Test
+    void updateQuestion_ShouldUpdateQuestion_WhenChangesFound() {
+        UpdateQuestionDTO updateQuestionDTO = UpdateQuestionDTO.builder()
+                .categoryName("Maths")
+                .questionText("Question 1")
+                .correctAnswer("B")
+                .options("A, B, C, E")
+                .build();
+
+        when(this.mockQuestionRepo.findById(1L))
+                .thenReturn(Optional.of(this.question));
+
+        this.questionService.updateQuestion(1L, updateQuestionDTO);
+
+        Assertions.assertEquals("Question 1", this.question.getQuestionText());
+        Assertions.assertEquals("B", this.question.getCorrectAnswer());
+        Assertions.assertEquals(List.of("A", "B", "C", "E"), this.question.getOptions());
+        verify(this.mockQuestionRepo, times(1)).findById(1L);
         verify(this.mockQuestionRepo, times(1)).saveAndFlush(any(Question.class));
     }
 }
