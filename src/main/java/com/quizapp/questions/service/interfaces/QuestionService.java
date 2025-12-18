@@ -1,9 +1,9 @@
 package com.quizapp.questions.service.interfaces;
 
-import com.quizapp.questions.model.dto.QuestionPageDTO;
-import com.quizapp.questions.model.dto.AddQuestionDTO;
-import com.quizapp.questions.model.dto.QuestionDTO;
-import com.quizapp.questions.model.dto.UpdateQuestionDTO;
+import com.quizapp.questions.model.dto.question.QuestionPageDTO;
+import com.quizapp.questions.model.dto.question.AddQuestionDTO;
+import com.quizapp.questions.model.dto.question.QuestionDTO;
+import com.quizapp.questions.model.dto.question.UpdateQuestionDTO;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.quizapp.questions.model.dto;
+package com.quizapp.questions.model.dto.category;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

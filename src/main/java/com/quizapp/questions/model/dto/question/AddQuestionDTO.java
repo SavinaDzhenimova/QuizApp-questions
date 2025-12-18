@@ -1,4 +1,4 @@
-package com.quizapp.questions.model.dto;
+package com.quizapp.questions.model.dto.question;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

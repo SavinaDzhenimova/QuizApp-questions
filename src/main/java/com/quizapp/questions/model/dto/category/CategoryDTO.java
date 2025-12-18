@@ -1,4 +1,4 @@
-package com.quizapp.questions.model.dto;
+package com.quizapp.questions.model.dto.category;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

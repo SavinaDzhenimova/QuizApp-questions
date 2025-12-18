@@ -1,5 +1,6 @@
-package com.quizapp.questions.model.dto;
+package com.quizapp.questions.model.dto.category;
 
+import com.quizapp.questions.model.dto.PageDTO;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 

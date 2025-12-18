@@ -1,6 +1,9 @@
 package com.quizapp.questions.web;
 
-import com.quizapp.questions.model.dto.*;
+import com.quizapp.questions.model.dto.category.AddCategoryDTO;
+import com.quizapp.questions.model.dto.category.CategoryDTO;
+import com.quizapp.questions.model.dto.category.CategoryPageDTO;
+import com.quizapp.questions.model.dto.category.UpdateCategoryDTO;
 import com.quizapp.questions.service.interfaces.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

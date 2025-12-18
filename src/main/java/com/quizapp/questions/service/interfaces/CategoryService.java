@@ -1,9 +1,9 @@
 package com.quizapp.questions.service.interfaces;
 
-import com.quizapp.questions.model.dto.AddCategoryDTO;
-import com.quizapp.questions.model.dto.CategoryDTO;
-import com.quizapp.questions.model.dto.CategoryPageDTO;
-import com.quizapp.questions.model.dto.UpdateCategoryDTO;
+import com.quizapp.questions.model.dto.category.AddCategoryDTO;
+import com.quizapp.questions.model.dto.category.CategoryDTO;
+import com.quizapp.questions.model.dto.category.CategoryPageDTO;
+import com.quizapp.questions.model.dto.category.UpdateCategoryDTO;
 import com.quizapp.questions.model.entity.Category;
 import org.springframework.data.domain.Pageable;
 

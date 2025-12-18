@@ -3,10 +3,10 @@ package com.quizapp.questions.service;
 import com.quizapp.questions.exception.CategoryNotFoundException;
 import com.quizapp.questions.exception.DuplicateResourceException;
 import com.quizapp.questions.exception.NoChangesException;
-import com.quizapp.questions.model.dto.AddCategoryDTO;
-import com.quizapp.questions.model.dto.CategoryDTO;
-import com.quizapp.questions.model.dto.CategoryPageDTO;
-import com.quizapp.questions.model.dto.UpdateCategoryDTO;
+import com.quizapp.questions.model.dto.category.AddCategoryDTO;
+import com.quizapp.questions.model.dto.category.CategoryDTO;
+import com.quizapp.questions.model.dto.category.CategoryPageDTO;
+import com.quizapp.questions.model.dto.category.UpdateCategoryDTO;
 import com.quizapp.questions.model.entity.Category;
 import com.quizapp.questions.repository.CategoryRepository;
 import jakarta.validation.ValidationException;
@@ -41,7 +41,6 @@ public class CategoryServiceImplTest {
     private CategoryServiceImpl categoryService;
 
     private Category category;
-    private CategoryDTO categoryDTO;
 
     @BeforeEach
     void setUp() {
@@ -52,7 +51,7 @@ public class CategoryServiceImplTest {
                 .questions(new ArrayList<>())
                 .build();
 
-        this.categoryDTO = CategoryDTO.builder()
+        CategoryDTO categoryDTO = CategoryDTO.builder()
                 .id(1L)
                 .name("Maths")
                 .description("Description")
