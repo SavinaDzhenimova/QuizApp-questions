@@ -43,10 +43,11 @@ public class QuestionServiceImplTest {
     private QuestionServiceImpl questionService;
 
     private Question question;
+    private Category category;
 
     @BeforeEach
     void setUp() {
-        Category category = Category.builder()
+        this.category = Category.builder()
                 .id(1L)
                 .name("Maths")
                 .description("Description")
@@ -129,5 +130,36 @@ public class QuestionServiceImplTest {
                 () -> this.questionService.getQuestionById(5L));
 
         Assertions.assertEquals("Въпрос с id 5 не е намерен.", exception.getMessage());
+    }
+
+    @Test
+    void getQuestionsByCategory_ShouldThrowException_WhenCategoryNotFound() {
+        when(this.mockCategoryService.findCategoryById(5L))
+                .thenReturn(Optional.empty());
+
+        CategoryNotFoundException exception = Assertions.assertThrows(CategoryNotFoundException.class,
+                () -> this.questionService.getQuestionsByCategory(5L));
+
+        Assertions.assertEquals("Категория с id 5 не е намерена.", exception.getMessage());
+    }
+
+    @Test
+    void getQuestionsByCategory_ShouldReturnMappedQuestionDTOs_WhenCategoryFound() {
+        when(this.mockCategoryService.findCategoryById(1L))
+                .thenReturn(Optional.of(this.category));
+        when(this.mockQuestionRepo.findByCategoryId(1L))
+                .thenReturn(List.of(this.question));
+
+        List<QuestionDTO> result = this.questionService.getQuestionsByCategory(1L);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertFalse(result.isEmpty());
+        Assertions.assertEquals(1L, result.get(0).getId());
+        Assertions.assertEquals(1L, result.get(0).getCategoryId());
+        Assertions.assertEquals("Maths", result.get(0).getCategoryName());
+        Assertions.assertEquals("Question", result.get(0).getQuestionText());
+        Assertions.assertEquals("A", result.get(0).getCorrectAnswer());
+        Assertions.assertNotNull(result.get(0).getOptions());
+        Assertions.assertEquals(List.of("A", "B", "C", "D"), result.get(0).getOptions());
     }
 }
