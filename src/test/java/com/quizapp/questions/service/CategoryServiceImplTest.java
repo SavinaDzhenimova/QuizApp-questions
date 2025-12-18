@@ -2,6 +2,7 @@ package com.quizapp.questions.service;
 
 import com.quizapp.questions.exception.CategoryNotFoundException;
 import com.quizapp.questions.model.dto.CategoryDTO;
+import com.quizapp.questions.model.dto.CategoryPageDTO;
 import com.quizapp.questions.model.entity.Category;
 import com.quizapp.questions.repository.CategoryRepository;
 import org.junit.jupiter.api.Assertions;
@@ -11,10 +12,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -119,5 +128,45 @@ public class CategoryServiceImplTest {
                 () -> this.categoryService.getCategoryById(1L));
 
         Assertions.assertEquals("Категория с id 1 не е намерена.", exception.getMessage());
+    }
+
+    @Test
+    void getAllCategories_ShouldReturnPageWithMappedCategoryDTOs() {
+        Pageable pageable = PageRequest.of(0, 10);
+
+        Page<Category> page = new PageImpl<>(List.of(this.category), pageable, 1);
+
+        when(this.mockCategoryRepository.findAll(any(Specification.class), eq(pageable)))
+                .thenReturn(page);
+
+        CategoryPageDTO pageDTO = this.categoryService.getAllCategories("Maths", pageable);
+
+        Assertions.assertNotNull(pageDTO);
+        Assertions.assertFalse(pageDTO.getCategories().isEmpty());
+        Assertions.assertEquals(1, pageDTO.getCategories().size());
+        Assertions.assertEquals(1L, pageDTO.getCategories().get(0).getId());
+        Assertions.assertEquals("Maths", pageDTO.getCategories().get(0).getName());
+        Assertions.assertEquals(0, pageDTO.getCurrentPage());
+        Assertions.assertEquals(1, pageDTO.getTotalPages());
+        Assertions.assertEquals(1L, pageDTO.getTotalElements());
+        Assertions.assertEquals(10, pageDTO.getSize());
+    }
+
+    @Test
+    void getAllCategories_ShouldReturnEmptyPage_WhenCategoriesNotFound() {
+        Pageable pageable = PageRequest.of(0, 10);
+
+        when(this.mockCategoryRepository.findAll(any(Specification.class), eq(pageable)))
+                .thenReturn(Page.empty());
+
+        CategoryPageDTO pageDTO = this.categoryService.getAllCategories("Music", pageable);
+
+        Assertions.assertNotNull(pageDTO);
+        Assertions.assertTrue(pageDTO.getCategories().isEmpty());
+        Assertions.assertEquals(0, pageDTO.getCategories().size());
+        Assertions.assertEquals(0, pageDTO.getCurrentPage());
+        Assertions.assertEquals(1, pageDTO.getTotalPages());
+        Assertions.assertEquals(0L, pageDTO.getTotalElements());
+        Assertions.assertEquals(0, pageDTO.getSize());
     }
 }
