@@ -2,9 +2,11 @@ package com.quizapp.questions.service;
 
 import com.quizapp.questions.exception.CategoryNotFoundException;
 import com.quizapp.questions.exception.DuplicateResourceException;
+import com.quizapp.questions.exception.NoChangesException;
 import com.quizapp.questions.model.dto.AddCategoryDTO;
 import com.quizapp.questions.model.dto.CategoryDTO;
 import com.quizapp.questions.model.dto.CategoryPageDTO;
+import com.quizapp.questions.model.dto.UpdateCategoryDTO;
 import com.quizapp.questions.model.entity.Category;
 import com.quizapp.questions.repository.CategoryRepository;
 import jakarta.validation.ValidationException;
@@ -213,6 +215,62 @@ public class CategoryServiceImplTest {
         this.categoryService.addCategory(addCategoryDTO);
 
         verify(this.mockCategoryRepository, times(1)).findByName("Music");
+        verify(this.mockCategoryRepository, times(1)).saveAndFlush(any(Category.class));
+    }
+
+    @Test
+    void updateCategory_ShouldThrowException_WhenCategoryNotFound() {
+        UpdateCategoryDTO updateCategoryDTO = UpdateCategoryDTO.builder()
+                .id(1L)
+                .name("Maths")
+                .description("New description")
+                .build();
+
+        when(this.mockCategoryRepository.findById(5L))
+                .thenReturn(Optional.empty());
+
+        CategoryNotFoundException exception = Assertions.assertThrows(CategoryNotFoundException.class,
+                () -> this.categoryService.updateCategory(5L, updateCategoryDTO));
+
+        Assertions.assertEquals("Категория с id 5 не е намерена.", exception.getMessage());
+        verify(this.mockCategoryRepository, times(1)).findById(5L);
+        verify(this.mockCategoryRepository, never()).saveAndFlush(any(Category.class));
+    }
+
+    @Test
+    void updateCategory_ShouldNotUpdateCategory_WhenNoChanges() {
+        UpdateCategoryDTO updateCategoryDTO = UpdateCategoryDTO.builder()
+                .id(1L)
+                .name("Maths")
+                .description("Description")
+                .build();
+
+        when(this.mockCategoryRepository.findById(1L))
+                .thenReturn(Optional.of(this.category));
+
+        NoChangesException exception = Assertions.assertThrows(NoChangesException.class,
+                () -> this.categoryService.updateCategory(1L, updateCategoryDTO));
+
+        Assertions.assertEquals("Няма промени за запазване.", exception.getMessage());
+        verify(this.mockCategoryRepository, times(1)).findById(1L);
+        verify(this.mockCategoryRepository, never()).saveAndFlush(any(Category.class));
+    }
+
+    @Test
+    void updateCategory_ShouldUpdateCategory_WhenDataIsValid() {
+        UpdateCategoryDTO updateCategoryDTO = UpdateCategoryDTO.builder()
+                .id(1L)
+                .name("Maths")
+                .description("New Description")
+                .build();
+
+        when(this.mockCategoryRepository.findById(1L))
+                .thenReturn(Optional.of(this.category));
+
+        this.categoryService.updateCategory(1L, updateCategoryDTO);
+
+        Assertions.assertEquals("New Description", this.category.getDescription());
+        verify(this.mockCategoryRepository, times(1)).findById(1L);
         verify(this.mockCategoryRepository, times(1)).saveAndFlush(any(Category.class));
     }
 }
