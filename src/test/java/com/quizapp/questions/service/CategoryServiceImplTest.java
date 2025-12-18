@@ -1,10 +1,13 @@
 package com.quizapp.questions.service;
 
 import com.quizapp.questions.exception.CategoryNotFoundException;
+import com.quizapp.questions.exception.DuplicateResourceException;
+import com.quizapp.questions.model.dto.AddCategoryDTO;
 import com.quizapp.questions.model.dto.CategoryDTO;
 import com.quizapp.questions.model.dto.CategoryPageDTO;
 import com.quizapp.questions.model.entity.Category;
 import com.quizapp.questions.repository.CategoryRepository;
+import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +27,7 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CategoryServiceImplTest {
@@ -168,5 +171,48 @@ public class CategoryServiceImplTest {
         Assertions.assertEquals(1, pageDTO.getTotalPages());
         Assertions.assertEquals(0L, pageDTO.getTotalElements());
         Assertions.assertEquals(0, pageDTO.getSize());
+    }
+
+    @Test
+    void addCategory_ShouldThrowException_WhenInputDataIsInvalid() {
+        ValidationException exception = Assertions.assertThrows(ValidationException.class,
+                () -> this.categoryService.addCategory(null));
+
+        Assertions.assertEquals("Невалидни входни данни.", exception.getMessage());
+        verifyNoInteractions(this.mockCategoryRepository);
+    }
+
+    @Test
+    void addCategory_ShouldThrowException_WhenCategoryExists() {
+        AddCategoryDTO addCategoryDTO = AddCategoryDTO.builder()
+                .name("Maths")
+                .description("Description")
+                .build();
+
+        when(this.mockCategoryRepository.findByName("Maths"))
+                .thenReturn(Optional.of(this.category));
+
+        DuplicateResourceException exception = Assertions.assertThrows(DuplicateResourceException.class,
+                () -> this.categoryService.addCategory(addCategoryDTO));
+
+        Assertions.assertEquals("Категория с име Maths вече съществува.", exception.getMessage());
+        verify(this.mockCategoryRepository, times(1)).findByName("Maths");
+        verify(this.mockCategoryRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void addCategory_ShouldSaveCategory_WhenInputDataIsValid() {
+        AddCategoryDTO addCategoryDTO = AddCategoryDTO.builder()
+                .name("Music")
+                .description("Description")
+                .build();
+
+        when(this.mockCategoryRepository.findByName("Music"))
+                .thenReturn(Optional.empty());
+
+        this.categoryService.addCategory(addCategoryDTO);
+
+        verify(this.mockCategoryRepository, times(1)).findByName("Music");
+        verify(this.mockCategoryRepository, times(1)).saveAndFlush(any(Category.class));
     }
 }
