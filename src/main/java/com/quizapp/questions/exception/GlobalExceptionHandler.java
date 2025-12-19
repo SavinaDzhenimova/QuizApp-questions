@@ -45,13 +45,6 @@ public class GlobalExceptionHandler {
                 "NO_CHANGES");
     }
 
-    @ExceptionHandler(ConflictException.class)
-    public ProblemDetail handleConflict(ConflictException ex, HttpServletRequest request) {
-
-        return buildProblemDetail(HttpStatus.CONFLICT, "Resource conflict", ex.getMessage(), request,
-                "CONFLICT");
-    }
-
     @ExceptionHandler(DuplicateResourceException.class)
     public ProblemDetail handleDuplicateResource(DuplicateResourceException ex, HttpServletRequest request) {
 
