@@ -11,7 +11,6 @@ import com.quizapp.questions.model.entity.Category;
 import com.quizapp.questions.repository.CategoryRepository;
 import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,21 +39,27 @@ public class CategoryServiceImplTest {
     @InjectMocks
     private CategoryServiceImpl categoryService;
 
-    private Category category;
-
-    @BeforeEach
-    void setUp() {
-        this.category = Category.builder()
+    private Category createCategory() {
+        return Category.builder()
                 .id(1L)
                 .name("Maths")
                 .description("Description")
                 .questions(new ArrayList<>())
                 .build();
+    }
 
-        CategoryDTO categoryDTO = CategoryDTO.builder()
+    private AddCategoryDTO createAddCategoryDTO(String name, String description) {
+        return AddCategoryDTO.builder()
+                .name(name)
+                .description(description)
+                .build();
+    }
+
+    private UpdateCategoryDTO createUpdateCategoryDTO(String name, String description) {
+        return UpdateCategoryDTO.builder()
                 .id(1L)
-                .name("Maths")
-                .description("Description")
+                .name(name)
+                .description(description)
                 .build();
     }
 
@@ -70,16 +75,18 @@ public class CategoryServiceImplTest {
 
     @Test
     void findCategoryByName_ShouldReturnCategory_WhenCategoryFound() {
+        Category category = this.createCategory();
+
         when(this.mockCategoryRepository.findByName("Maths"))
-                .thenReturn(Optional.of(this.category));
+                .thenReturn(Optional.of(category));
 
         Optional<Category> optionalCategory = this.categoryService.findCategoryByName("Maths");
 
         Assertions.assertTrue(optionalCategory.isPresent());
-        Assertions.assertEquals(optionalCategory.get(), this.category);
-        Assertions.assertEquals(this.category.getId(), optionalCategory.get().getId());
-        Assertions.assertEquals(this.category.getName(), optionalCategory.get().getName());
-        Assertions.assertEquals(this.category.getDescription(), optionalCategory.get().getDescription());
+        Assertions.assertEquals(optionalCategory.get(), category);
+        Assertions.assertEquals(category.getId(), optionalCategory.get().getId());
+        Assertions.assertEquals(category.getName(), optionalCategory.get().getName());
+        Assertions.assertEquals(category.getDescription(), optionalCategory.get().getDescription());
         Assertions.assertNotNull(optionalCategory.get().getQuestions());
         Assertions.assertTrue(optionalCategory.get().getQuestions().isEmpty());
     }
@@ -96,16 +103,18 @@ public class CategoryServiceImplTest {
 
     @Test
     void findCategoryById_ShouldReturnCategory_WhenCategoryFound() {
+        Category category = this.createCategory();
+
         when(this.mockCategoryRepository.findById(1L))
-                .thenReturn(Optional.of(this.category));
+                .thenReturn(Optional.of(category));
 
         Optional<Category> optionalCategory = this.categoryService.findCategoryById(1L);
 
         Assertions.assertTrue(optionalCategory.isPresent());
-        Assertions.assertEquals(optionalCategory.get(), this.category);
-        Assertions.assertEquals(this.category.getId(), optionalCategory.get().getId());
-        Assertions.assertEquals(this.category.getName(), optionalCategory.get().getName());
-        Assertions.assertEquals(this.category.getDescription(), optionalCategory.get().getDescription());
+        Assertions.assertEquals(optionalCategory.get(), category);
+        Assertions.assertEquals(category.getId(), optionalCategory.get().getId());
+        Assertions.assertEquals(category.getName(), optionalCategory.get().getName());
+        Assertions.assertEquals(category.getDescription(), optionalCategory.get().getDescription());
         Assertions.assertNotNull(optionalCategory.get().getQuestions());
         Assertions.assertTrue(optionalCategory.get().getQuestions().isEmpty());
     }
@@ -113,7 +122,7 @@ public class CategoryServiceImplTest {
     @Test
     void getCategoryById_ShouldReturnCategoryDTO_WhenCategoryFound() {
         when(this.mockCategoryRepository.findById(1L))
-                .thenReturn(Optional.of(this.category));
+                .thenReturn(Optional.of(this.createCategory()));
 
         CategoryDTO result = this.categoryService.getCategoryById(1L);
 
@@ -138,7 +147,7 @@ public class CategoryServiceImplTest {
     void getAllCategories_ShouldReturnPageWithMappedCategoryDTOs() {
         Pageable pageable = PageRequest.of(0, 10);
 
-        Page<Category> page = new PageImpl<>(List.of(this.category), pageable, 1);
+        Page<Category> page = new PageImpl<>(List.of(this.createCategory()), pageable, 1);
 
         when(this.mockCategoryRepository.findAll(any(Specification.class), eq(pageable)))
                 .thenReturn(page);
@@ -185,13 +194,10 @@ public class CategoryServiceImplTest {
 
     @Test
     void addCategory_ShouldThrowException_WhenCategoryExists() {
-        AddCategoryDTO addCategoryDTO = AddCategoryDTO.builder()
-                .name("Maths")
-                .description("Description")
-                .build();
+        AddCategoryDTO addCategoryDTO = this.createAddCategoryDTO("Maths", "Description");
 
         when(this.mockCategoryRepository.findByName("Maths"))
-                .thenReturn(Optional.of(this.category));
+                .thenReturn(Optional.of(this.createCategory()));
 
         DuplicateResourceException exception = Assertions.assertThrows(DuplicateResourceException.class,
                 () -> this.categoryService.addCategory(addCategoryDTO));
@@ -203,10 +209,7 @@ public class CategoryServiceImplTest {
 
     @Test
     void addCategory_ShouldSaveCategory_WhenInputDataIsValid() {
-        AddCategoryDTO addCategoryDTO = AddCategoryDTO.builder()
-                .name("Music")
-                .description("Description")
-                .build();
+        AddCategoryDTO addCategoryDTO = this.createAddCategoryDTO("Music", "Description");
 
         when(this.mockCategoryRepository.findByName("Music"))
                 .thenReturn(Optional.empty());
@@ -219,11 +222,7 @@ public class CategoryServiceImplTest {
 
     @Test
     void updateCategory_ShouldThrowException_WhenCategoryNotFound() {
-        UpdateCategoryDTO updateCategoryDTO = UpdateCategoryDTO.builder()
-                .id(1L)
-                .name("Maths")
-                .description("New description")
-                .build();
+        UpdateCategoryDTO updateCategoryDTO = this.createUpdateCategoryDTO("Maths", "New description");
 
         when(this.mockCategoryRepository.findById(5L))
                 .thenReturn(Optional.empty());
@@ -238,14 +237,10 @@ public class CategoryServiceImplTest {
 
     @Test
     void updateCategory_ShouldNotUpdateCategory_WhenNoChanges() {
-        UpdateCategoryDTO updateCategoryDTO = UpdateCategoryDTO.builder()
-                .id(1L)
-                .name("Maths")
-                .description("Description")
-                .build();
+        UpdateCategoryDTO updateCategoryDTO = this.createUpdateCategoryDTO("Maths", "Description");
 
         when(this.mockCategoryRepository.findById(1L))
-                .thenReturn(Optional.of(this.category));
+                .thenReturn(Optional.of(createCategory()));
 
         NoChangesException exception = Assertions.assertThrows(NoChangesException.class,
                 () -> this.categoryService.updateCategory(1L, updateCategoryDTO));
@@ -257,18 +252,16 @@ public class CategoryServiceImplTest {
 
     @Test
     void updateCategory_ShouldUpdateCategory_WhenDataIsValid() {
-        UpdateCategoryDTO updateCategoryDTO = UpdateCategoryDTO.builder()
-                .id(1L)
-                .name("Maths")
-                .description("New Description")
-                .build();
+        Category category = this.createCategory();
+
+        UpdateCategoryDTO updateCategoryDTO = this.createUpdateCategoryDTO("Maths", "New Description");
 
         when(this.mockCategoryRepository.findById(1L))
-                .thenReturn(Optional.of(this.category));
+                .thenReturn(Optional.of(category));
 
         this.categoryService.updateCategory(1L, updateCategoryDTO);
 
-        Assertions.assertEquals("New Description", this.category.getDescription());
+        Assertions.assertEquals("New Description", category.getDescription());
         verify(this.mockCategoryRepository, times(1)).findById(1L);
         verify(this.mockCategoryRepository, times(1)).saveAndFlush(any(Category.class));
     }
