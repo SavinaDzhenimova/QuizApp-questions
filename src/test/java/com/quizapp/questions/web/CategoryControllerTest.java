@@ -3,11 +3,11 @@ package com.quizapp.questions.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quizapp.questions.exception.CategoryNotFoundException;
 import com.quizapp.questions.exception.DuplicateResourceException;
+import com.quizapp.questions.exception.NoChangesException;
 import com.quizapp.questions.model.dto.category.AddCategoryDTO;
 import com.quizapp.questions.model.dto.category.CategoryDTO;
 import com.quizapp.questions.model.dto.category.CategoryPageDTO;
 import com.quizapp.questions.model.dto.category.UpdateCategoryDTO;
-import com.quizapp.questions.model.dto.question.AddQuestionDTO;
 import com.quizapp.questions.service.interfaces.CategoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -133,18 +133,18 @@ public class CategoryControllerTest {
 
     @Test
     void addCategory_ShouldReturnProblemDetail_WhenDuplicateResource() throws Exception {
+        AddCategoryDTO addCategoryDTO = AddCategoryDTO.builder()
+                .name("Maths")
+                .description("Description")
+                .build();
+
         doThrow(new DuplicateResourceException("Категория с име Maths вече съществува."))
-                .when(this.categoryService).addCategory(any(AddCategoryDTO.class));
+                .when(this.categoryService).addCategory(addCategoryDTO);
 
         this.mockMvc.perform(post("/api/categories")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "name": "Maths",
-                                  "description": "Description"
-                                }
-                            """))
+                        .content(this.objectMapper.writeValueAsString(addCategoryDTO)))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentType("application/problem+json"))
                 .andExpect(jsonPath("$.title").value("Duplicate resource"))
@@ -173,20 +173,20 @@ public class CategoryControllerTest {
     }
 
     @Test
-    void addQuestion_ShouldReturnProblemDetail_WhenCategoryNotFound() throws Exception {
+    void updateCategory_ShouldReturnProblemDetail_WhenCategoryNotFound() throws Exception {
+        UpdateCategoryDTO updateCategoryDTO = UpdateCategoryDTO.builder()
+                .id(5L)
+                .name("Maths")
+                .description("New description")
+                .build();
+
         doThrow(new CategoryNotFoundException(5L))
-                .when(this.categoryService).updateCategory(eq(5L), any(UpdateCategoryDTO.class));
+                .when(this.categoryService).updateCategory(5L, updateCategoryDTO);
 
         this.mockMvc.perform(put("/api/categories/{id}", 5L)
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "id": "5",
-                                  "name": "Music",
-                                  "description": "New description"
-                                }
-                            """))
+                        .content(this.objectMapper.writeValueAsString(updateCategoryDTO)))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/problem+json"))
                 .andExpect(jsonPath("$.title").value("Category not found"))
@@ -195,6 +195,32 @@ public class CategoryControllerTest {
                 .andExpect(jsonPath("$.code").value("CATEGORY_NOT_FOUND"))
                 .andExpect(jsonPath("$.type").value("urn:problem:category_not_found"))
                 .andExpect(jsonPath("$.instance").value("/api/categories/5"))
+                .andExpect(jsonPath("$.timestamp").exists());
+    }
+
+    @Test
+    void updateCategory_ShouldReturnProblemDetail_WhenNoChanges() throws Exception {
+        UpdateCategoryDTO updateCategoryDTO = UpdateCategoryDTO.builder()
+                .id(1L)
+                .name("Maths")
+                .description("Description")
+                .build();
+
+        doThrow(new NoChangesException("Няма промени за запазване."))
+                .when(this.categoryService).updateCategory(1L, updateCategoryDTO);
+
+        this.mockMvc.perform(put("/api/categories/{id}", 1L)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(updateCategoryDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.title").value("No changes"))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.detail").value("Няма промени за запазване."))
+                .andExpect(jsonPath("$.code").value("NO_CHANGES"))
+                .andExpect(jsonPath("$.type").value("urn:problem:no_changes"))
+                .andExpect(jsonPath("$.instance").value("/api/categories/1"))
                 .andExpect(jsonPath("$.timestamp").exists());
     }
 }

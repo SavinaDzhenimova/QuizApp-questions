@@ -2,6 +2,7 @@ package com.quizapp.questions.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quizapp.questions.exception.CategoryNotFoundException;
+import com.quizapp.questions.exception.NoChangesException;
 import com.quizapp.questions.exception.QuestionNotFoundException;
 import com.quizapp.questions.model.dto.question.AddQuestionDTO;
 import com.quizapp.questions.model.dto.question.QuestionDTO;
@@ -175,21 +176,21 @@ public class QuestionControllerTest {
     }
 
     @Test
-    void addQuestion_ShouldReturnProblemDetail_WhenCategoryNotFound() throws Exception {
+    void addQuestion_ShouldReturnProblemDetail_WhenDuplicateResource() throws Exception {
+        AddQuestionDTO addQuestionDTO = AddQuestionDTO.builder()
+                .categoryId(5L)
+                .questionText("Question")
+                .correctAnswer("A")
+                .options("A, B, C, D")
+                .build();
+
         doThrow(new CategoryNotFoundException(5L))
-                .when(this.questionService).addQuestion(any(AddQuestionDTO.class));
+                .when(this.questionService).addQuestion(addQuestionDTO);
 
         this.mockMvc.perform(post("/api/questions")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "questionText": "Question",
-                                  "categoryId": "5",
-                                  "correctAnswer": "A",
-                                  "options": "A, B, C, D"
-                                }
-                            """))
+                        .content(this.objectMapper.writeValueAsString(addQuestionDTO)))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/problem+json"))
                 .andExpect(jsonPath("$.title").value("Category not found"))
@@ -217,5 +218,33 @@ public class QuestionControllerTest {
                 .andExpect(status().isOk());
 
         verify(this.questionService, times(1)).updateQuestion(1L, updateQuestionDTO);
+    }
+
+    @Test
+    void updateQuestion_ShouldReturnProblemDetail_WhenNoChanges() throws Exception {
+        UpdateQuestionDTO updateQuestionDTO = UpdateQuestionDTO.builder()
+                .id(1L)
+                .categoryName("Maths")
+                .questionText("Question")
+                .correctAnswer("A")
+                .options("A, B, C, D")
+                .build();
+
+        doThrow(new NoChangesException("Няма промени за запазване."))
+                .when(this.questionService).updateQuestion(eq(1L), any(UpdateQuestionDTO.class));
+
+        this.mockMvc.perform(put("/api/questions/{id}", 1L)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(updateQuestionDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.title").value("No changes"))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.detail").value("Няма промени за запазване."))
+                .andExpect(jsonPath("$.code").value("NO_CHANGES"))
+                .andExpect(jsonPath("$.type").value("urn:problem:no_changes"))
+                .andExpect(jsonPath("$.instance").value("/api/questions/1"))
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 }
