@@ -7,6 +7,7 @@ import com.quizapp.questions.model.dto.category.AddCategoryDTO;
 import com.quizapp.questions.model.dto.category.CategoryDTO;
 import com.quizapp.questions.model.dto.category.CategoryPageDTO;
 import com.quizapp.questions.model.dto.category.UpdateCategoryDTO;
+import com.quizapp.questions.model.dto.question.AddQuestionDTO;
 import com.quizapp.questions.service.interfaces.CategoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -169,5 +170,31 @@ public class CategoryControllerTest {
                 .andExpect(status().isOk());
 
         verify(this.categoryService, times(1)).updateCategory(1L, updateCategoryDTO);
+    }
+
+    @Test
+    void addQuestion_ShouldReturnProblemDetail_WhenCategoryNotFound() throws Exception {
+        doThrow(new CategoryNotFoundException(5L))
+                .when(this.categoryService).updateCategory(eq(5L), any(UpdateCategoryDTO.class));
+
+        this.mockMvc.perform(put("/api/categories/{id}", 5L)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "id": "5",
+                                  "name": "Music",
+                                  "description": "New description"
+                                }
+                            """))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.title").value("Category not found"))
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.detail").value("Категория с id 5 не е намерена."))
+                .andExpect(jsonPath("$.code").value("CATEGORY_NOT_FOUND"))
+                .andExpect(jsonPath("$.type").value("urn:problem:category_not_found"))
+                .andExpect(jsonPath("$.instance").value("/api/categories/5"))
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 }

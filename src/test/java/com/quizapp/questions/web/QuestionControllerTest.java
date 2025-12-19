@@ -175,7 +175,7 @@ public class QuestionControllerTest {
     }
 
     @Test
-    void addQuestion_ShouldReturnProblemDetail_WhenDuplicateResource() throws Exception {
+    void addQuestion_ShouldReturnProblemDetail_WhenCategoryNotFound() throws Exception {
         doThrow(new CategoryNotFoundException(5L))
                 .when(this.questionService).addQuestion(any(AddQuestionDTO.class));
 
