@@ -16,6 +16,7 @@ import org.springframework.data.jpa.domain.Specification;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyLong;
 
 @DataJpaTest
 public class QuestionRepositoryTest {
@@ -26,6 +27,8 @@ public class QuestionRepositoryTest {
     @Autowired
     private QuestionRepository questionRepository;
 
+    private Question question;
+
     @BeforeEach
     void setUp() {
         Category category = Category.builder()
@@ -34,7 +37,7 @@ public class QuestionRepositoryTest {
                 .build();
         this.entityManager.persist(category);
 
-        Question question = Question.builder()
+        this.question = Question.builder()
                 .category(category)
                 .questionText("Question")
                 .correctAnswer("A")
@@ -48,7 +51,7 @@ public class QuestionRepositoryTest {
     @Test
     void findAll_ShouldReturnQuestionsWithSpecificationAndPageable_WhenQuestionsFound() {
         Specification<Question> spec = Specification
-                .allOf(QuestionSpecifications.hasCategory(1L))
+                .allOf(QuestionSpecifications.hasCategory(this.question.getCategory().getId()))
                 .and(QuestionSpecifications.hasText("Question"));
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -65,7 +68,7 @@ public class QuestionRepositoryTest {
     @Test
     void findAll_ShouldReturnEmpty_WhenQuestionsNotFound() {
         Specification<Question> spec = Specification
-                .allOf(QuestionSpecifications.hasCategory(1L))
+                .allOf(QuestionSpecifications.hasCategory(this.question.getCategory().getId()))
                 .and(QuestionSpecifications.hasText("Missing"));
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -76,7 +79,7 @@ public class QuestionRepositoryTest {
 
     @Test
     void findByCategoryId_ShouldReturnQuestions_WhenCategoryFound() {
-        List<Question> questions = this.questionRepository.findByCategoryId(1L);
+        List<Question> questions = this.questionRepository.findByCategoryId(this.question.getId());
 
         assertThat(questions).isNotEmpty();
         assertThat(questions.get(0).getQuestionText()).isEqualTo("Question");
@@ -88,7 +91,7 @@ public class QuestionRepositoryTest {
 
     @Test
     void findByCategoryId_ShouldReturnEmptyQuestions_WhenCategoryNotFound() {
-        List<Question> questions = this.questionRepository.findByCategoryId(5L);
+        List<Question> questions = this.questionRepository.findByCategoryId(anyLong());
 
         assertThat(questions).isEmpty();
     }

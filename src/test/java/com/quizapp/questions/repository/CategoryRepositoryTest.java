@@ -22,9 +22,11 @@ public class CategoryRepositoryTest {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    private Category category;
+
     @BeforeEach
     void setUp() {
-        Category category = Category.builder()
+        this.category = Category.builder()
                 .name("Maths")
                 .description("Description")
                 .questions(new ArrayList<>())
@@ -47,7 +49,7 @@ public class CategoryRepositoryTest {
     @Test
     void findAll_ShouldReturnCategoriesWithSpecificationAndPageable_WhenCategoriesFound() {
         Specification<Category> spec = Specification
-                .allOf(CategorySpecifications.hasName("Maths"));
+                .allOf(CategorySpecifications.hasName(this.category.getName()));
         Pageable pageable = PageRequest.of(0, 10);
 
         Page<Category> page = this.categoryRepository.findAll(spec, pageable);
@@ -59,7 +61,7 @@ public class CategoryRepositoryTest {
 
     @Test
     void findByName_ShouldReturnCategory_WhenCategoryFound() {
-        Optional<Category> optionalCategory = this.categoryRepository.findByName("Maths");
+        Optional<Category> optionalCategory = this.categoryRepository.findByName(this.category.getName());
 
         assertThat(optionalCategory).isNotEmpty();
         assertThat(optionalCategory.get().getName()).isEqualTo("Maths");
