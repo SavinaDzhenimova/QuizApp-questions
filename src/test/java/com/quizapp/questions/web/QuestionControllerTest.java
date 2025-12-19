@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quizapp.questions.exception.CategoryNotFoundException;
 import com.quizapp.questions.exception.NoChangesException;
 import com.quizapp.questions.exception.QuestionNotFoundException;
+import com.quizapp.questions.model.dto.category.AddCategoryDTO;
 import com.quizapp.questions.model.dto.question.AddQuestionDTO;
 import com.quizapp.questions.model.dto.question.QuestionDTO;
 import com.quizapp.questions.model.dto.question.QuestionPageDTO;
@@ -173,6 +174,24 @@ public class QuestionControllerTest {
                 .andExpect(status().isCreated());
 
         verify(this.questionService, times(1)).addQuestion(addQuestionDTO);
+    }
+
+    @Test
+    void addQuestion_ShouldReturnProblemDetail_WhenValidationError() throws Exception {
+        AddQuestionDTO addQuestionDTO = new AddQuestionDTO();
+
+        this.mockMvc.perform(post("/api/questions")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(addQuestionDTO)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.title").value("Internal server error"))
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"))
+                .andExpect(jsonPath("$.type").value("urn:problem:internal_server_error"))
+                .andExpect(jsonPath("$.instance").value("/api/questions"))
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 
     @Test

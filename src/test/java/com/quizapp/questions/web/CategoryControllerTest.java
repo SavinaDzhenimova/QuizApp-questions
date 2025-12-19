@@ -9,6 +9,7 @@ import com.quizapp.questions.model.dto.category.CategoryDTO;
 import com.quizapp.questions.model.dto.category.CategoryPageDTO;
 import com.quizapp.questions.model.dto.category.UpdateCategoryDTO;
 import com.quizapp.questions.service.interfaces.CategoryService;
+import jakarta.xml.bind.ValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,6 +153,24 @@ public class CategoryControllerTest {
                 .andExpect(jsonPath("$.detail").value("Категория с име Maths вече съществува."))
                 .andExpect(jsonPath("$.code").value("DUPLICATE_RESOURCE"))
                 .andExpect(jsonPath("$.type").value("urn:problem:duplicate_resource"))
+                .andExpect(jsonPath("$.instance").value("/api/categories"))
+                .andExpect(jsonPath("$.timestamp").exists());
+    }
+
+    @Test
+    void addCategory_ShouldReturnProblemDetail_WhenValidationError() throws Exception {
+        AddCategoryDTO addCategoryDTO = new AddCategoryDTO();
+
+        this.mockMvc.perform(post("/api/categories")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(addCategoryDTO)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.title").value("Internal server error"))
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"))
+                .andExpect(jsonPath("$.type").value("urn:problem:internal_server_error"))
                 .andExpect(jsonPath("$.instance").value("/api/categories"))
                 .andExpect(jsonPath("$.timestamp").exists());
     }
