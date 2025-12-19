@@ -221,6 +221,34 @@ public class QuestionControllerTest {
     }
 
     @Test
+    void updateQuestion_ShouldReturnProblemDetail_WhenQuestionNotFound() throws Exception {
+        UpdateQuestionDTO updateQuestionDTO = UpdateQuestionDTO.builder()
+                .id(5L)
+                .categoryName("Maths")
+                .questionText("Question")
+                .correctAnswer("A")
+                .options("A, B, C, D")
+                .build();
+
+        doThrow(new QuestionNotFoundException(5L))
+                .when(this.questionService).updateQuestion(5L, updateQuestionDTO);
+
+        this.mockMvc.perform(put("/api/questions/{id}", 5L)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(updateQuestionDTO)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.title").value("Question not found"))
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.detail").value("Въпрос с id 5 не е намерен."))
+                .andExpect(jsonPath("$.code").value("QUESTION_NOT_FOUND"))
+                .andExpect(jsonPath("$.type").value("urn:problem:question_not_found"))
+                .andExpect(jsonPath("$.instance").value("/api/questions/5"))
+                .andExpect(jsonPath("$.timestamp").exists());
+    }
+
+    @Test
     void updateQuestion_ShouldReturnProblemDetail_WhenNoChanges() throws Exception {
         UpdateQuestionDTO updateQuestionDTO = UpdateQuestionDTO.builder()
                 .id(1L)
@@ -231,7 +259,7 @@ public class QuestionControllerTest {
                 .build();
 
         doThrow(new NoChangesException("Няма промени за запазване."))
-                .when(this.questionService).updateQuestion(eq(1L), any(UpdateQuestionDTO.class));
+                .when(this.questionService).updateQuestion(1L, updateQuestionDTO);
 
         this.mockMvc.perform(put("/api/questions/{id}", 1L)
                         .with(csrf())
