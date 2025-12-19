@@ -27,6 +27,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,30 +47,46 @@ public class QuestionServiceImplTest {
     @InjectMocks
     private QuestionServiceImpl questionService;
 
-    private Question question;
-    private Category category;
-
-    @BeforeEach
-    void setUp() {
-        this.category = Category.builder()
+    private Category createCategory() {
+        return Category.builder()
                 .id(1L)
                 .name("Maths")
                 .description("Description")
                 .build();
+    }
 
-        this.question = Question.builder()
+    private Question createQuestion() {
+        return Question.builder()
                 .id(1L)
-                .category(category)
+                .category(createCategory())
                 .questionText("Question")
                 .correctAnswer("A")
-                .options(List.of("A", "B", "C", "D"))
+                .options(new ArrayList<>(List.of("A", "B", "C", "D")))
+                .build();
+    }
+
+    private AddQuestionDTO createAddQuestionDTO(Long categoryId) {
+        return AddQuestionDTO.builder()
+                .categoryId(categoryId)
+                .questionText("Question")
+                .correctAnswer("B")
+                .options("A, B, C, D")
+                .build();
+    }
+
+    private UpdateQuestionDTO createUpdateDTO(String text, String answer, String options) {
+        return UpdateQuestionDTO.builder()
+                .categoryName("Maths")
+                .questionText(text)
+                .correctAnswer(answer)
+                .options(options)
                 .build();
     }
 
     @Test
     void getAllQuestions_ShouldReturnMappedQuestionDTOs() {
         Pageable pageable = PageRequest.of(0, 10);
-        Page<Question> page = new PageImpl<>(List.of(this.question), pageable, 1);
+        Page<Question> page = new PageImpl<>(List.of(this.createQuestion()), pageable, 1);
 
         when(this.mockQuestionRepo.findAll(any(Specification.class), eq(pageable)))
                 .thenReturn(page);
@@ -111,7 +128,7 @@ public class QuestionServiceImplTest {
     @Test
     void getCategoryById_ShouldReturnCategoryDTO_WhenCategoryFound() {
         when(this.mockQuestionRepo.findById(1L))
-                .thenReturn(Optional.of(this.question));
+                .thenReturn(Optional.of(this.createQuestion()));
 
         QuestionDTO result = this.questionService.getQuestionById(1L);
 
@@ -150,9 +167,9 @@ public class QuestionServiceImplTest {
     @Test
     void getQuestionsByCategory_ShouldReturnMappedQuestionDTOs_WhenCategoryFound() {
         when(this.mockCategoryService.findCategoryById(1L))
-                .thenReturn(Optional.of(this.category));
+                .thenReturn(Optional.of(this.createCategory()));
         when(this.mockQuestionRepo.findByCategoryId(1L))
-                .thenReturn(List.of(this.question));
+                .thenReturn(List.of(this.createQuestion()));
 
         List<QuestionDTO> result = this.questionService.getQuestionsByCategory(1L);
 
@@ -179,12 +196,7 @@ public class QuestionServiceImplTest {
 
     @Test
     void addQuestion_ShouldThrowException_WhenCategoryNotFound() {
-        AddQuestionDTO addQuestionDTO = AddQuestionDTO.builder()
-                .categoryId(5L)
-                .questionText("Question")
-                .correctAnswer("B")
-                .options("A, B, C, D")
-                .build();
+        AddQuestionDTO addQuestionDTO = this.createAddQuestionDTO(5L);
 
         when(this.mockCategoryService.findCategoryById(5L))
                 .thenReturn(Optional.empty());
@@ -199,15 +211,10 @@ public class QuestionServiceImplTest {
 
     @Test
     void addQuestion_ShouldSaveQuestion_WhenCategoryFoundAndInputDataIsValid() {
-        AddQuestionDTO addQuestionDTO = AddQuestionDTO.builder()
-                .categoryId(1L)
-                .questionText("Question")
-                .correctAnswer("B")
-                .options("A, B, C, D")
-                .build();
+        AddQuestionDTO addQuestionDTO = this.createAddQuestionDTO(1L);
 
         when(this.mockCategoryService.findCategoryById(1L))
-                .thenReturn(Optional.of(this.category));
+                .thenReturn(Optional.of(this.createCategory()));
 
         this.questionService.addQuestion(addQuestionDTO);
 
@@ -217,12 +224,7 @@ public class QuestionServiceImplTest {
 
     @Test
     void updateQuestion_ShouldThrowException_WhenQuestionNotFound() {
-        UpdateQuestionDTO updateQuestionDTO = UpdateQuestionDTO.builder()
-                .categoryName("Maths")
-                .questionText("Question")
-                .correctAnswer("B")
-                .options("A, B, C, D")
-                .build();
+        UpdateQuestionDTO updateQuestionDTO = this.createUpdateDTO("Question", "B", "A, B, C, D");
 
         when(this.mockQuestionRepo.findById(5L))
                 .thenReturn(Optional.empty());
@@ -245,7 +247,7 @@ public class QuestionServiceImplTest {
                 .build();
 
         when(this.mockQuestionRepo.findById(1L))
-                .thenReturn(Optional.of(this.question));
+                .thenReturn(Optional.of(this.createQuestion()));
 
         NoChangesException exception = Assertions.assertThrows(NoChangesException.class,
                 () -> this.questionService.updateQuestion(1L, updateQuestionDTO));
@@ -257,21 +259,18 @@ public class QuestionServiceImplTest {
 
     @Test
     void updateQuestion_ShouldUpdateQuestion_WhenChangesFound() {
-        UpdateQuestionDTO updateQuestionDTO = UpdateQuestionDTO.builder()
-                .categoryName("Maths")
-                .questionText("Question 1")
-                .correctAnswer("B")
-                .options("A, B, C, E")
-                .build();
+        Question question = this.createQuestion();
+
+        UpdateQuestionDTO updateQuestionDTO = this.createUpdateDTO("Question 1","B", "A, B, C, E");
 
         when(this.mockQuestionRepo.findById(1L))
-                .thenReturn(Optional.of(this.question));
+                .thenReturn(Optional.of(question));
 
         this.questionService.updateQuestion(1L, updateQuestionDTO);
 
-        Assertions.assertEquals("Question 1", this.question.getQuestionText());
-        Assertions.assertEquals("B", this.question.getCorrectAnswer());
-        Assertions.assertEquals(List.of("A", "B", "C", "E"), this.question.getOptions());
+        Assertions.assertEquals("Question 1", question.getQuestionText());
+        Assertions.assertEquals("B", question.getCorrectAnswer());
+        Assertions.assertEquals(List.of("A", "B", "C", "E"), question.getOptions());
         verify(this.mockQuestionRepo, times(1)).findById(1L);
         verify(this.mockQuestionRepo, times(1)).saveAndFlush(any(Question.class));
     }

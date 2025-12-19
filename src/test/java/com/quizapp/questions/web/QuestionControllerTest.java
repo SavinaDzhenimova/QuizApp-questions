@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quizapp.questions.exception.CategoryNotFoundException;
 import com.quizapp.questions.exception.NoChangesException;
 import com.quizapp.questions.exception.QuestionNotFoundException;
-import com.quizapp.questions.model.dto.category.AddCategoryDTO;
 import com.quizapp.questions.model.dto.question.AddQuestionDTO;
 import com.quizapp.questions.model.dto.question.QuestionDTO;
 import com.quizapp.questions.model.dto.question.QuestionPageDTO;
