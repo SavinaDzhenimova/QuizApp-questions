@@ -1,6 +1,7 @@
 package com.quizapp.questions.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.quizapp.questions.exception.CategoryNotFoundException;
 import com.quizapp.questions.model.dto.category.AddCategoryDTO;
 import com.quizapp.questions.model.dto.category.CategoryDTO;
 import com.quizapp.questions.model.dto.category.CategoryPageDTO;
@@ -93,6 +94,23 @@ public class CategoryControllerTest {
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Maths"))
                 .andExpect(jsonPath("$.description").value("Description"));
+    }
+
+    @Test
+    void getCategoryById_ShouldReturnProblemDetail_WhenCategoryNotFound() throws Exception {
+        when(categoryService.getCategoryById(5L))
+                .thenThrow(new CategoryNotFoundException(5L));
+
+        mockMvc.perform(get("/api/categories/5"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.title").value("Category not found"))
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.detail").value("Категория с id 5 не е намерена."))
+                .andExpect(jsonPath("$.code").value("CATEGORY_NOT_FOUND"))
+                .andExpect(jsonPath("$.type").value("urn:problem:category_not_found"))
+                .andExpect(jsonPath("$.instance").value("/api/categories/5"))
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 
     @Test

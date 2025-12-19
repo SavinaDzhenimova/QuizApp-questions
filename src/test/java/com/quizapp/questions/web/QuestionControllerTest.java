@@ -2,6 +2,8 @@ package com.quizapp.questions.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.quizapp.questions.exception.CategoryNotFoundException;
+import com.quizapp.questions.exception.QuestionNotFoundException;
 import com.quizapp.questions.model.dto.category.AddCategoryDTO;
 import com.quizapp.questions.model.dto.category.CategoryPageDTO;
 import com.quizapp.questions.model.dto.category.UpdateCategoryDTO;
@@ -110,6 +112,23 @@ public class QuestionControllerTest {
                 .andExpect(jsonPath("$.options").isArray())
                 .andExpect(jsonPath("$.options.length()").value(4))
                 .andExpect(jsonPath("$.options", containsInAnyOrder("A", "B", "C", "D")));
+    }
+
+    @Test
+    void getQuestionById_ShouldReturnProblemDetail_WhenQuestionNotFound() throws Exception {
+        when(this.questionService.getQuestionById(5L))
+                .thenThrow(new QuestionNotFoundException(5L));
+
+        mockMvc.perform(get("/api/questions/5"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.title").value("Question not found"))
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.detail").value("Въпрос с id 5 не е намерен."))
+                .andExpect(jsonPath("$.code").value("QUESTION_NOT_FOUND"))
+                .andExpect(jsonPath("$.type").value("urn:problem:question_not_found"))
+                .andExpect(jsonPath("$.instance").value("/api/questions/5"))
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 
     @Test
