@@ -2,6 +2,7 @@ package com.quizapp.questions.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quizapp.questions.exception.CategoryNotFoundException;
+import com.quizapp.questions.exception.DuplicateResourceException;
 import com.quizapp.questions.model.dto.category.AddCategoryDTO;
 import com.quizapp.questions.model.dto.category.CategoryDTO;
 import com.quizapp.questions.model.dto.category.CategoryPageDTO;
@@ -22,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -98,10 +100,10 @@ public class CategoryControllerTest {
 
     @Test
     void getCategoryById_ShouldReturnProblemDetail_WhenCategoryNotFound() throws Exception {
-        when(categoryService.getCategoryById(5L))
+        when(this.categoryService.getCategoryById(5L))
                 .thenThrow(new CategoryNotFoundException(5L));
 
-        mockMvc.perform(get("/api/categories/5"))
+        this.mockMvc.perform(get("/api/categories/5"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/problem+json"))
                 .andExpect(jsonPath("$.title").value("Category not found"))
@@ -126,6 +128,31 @@ public class CategoryControllerTest {
                 .andExpect(status().isCreated());
 
         verify(this.categoryService, times(1)).addCategory(addCategoryDTO);
+    }
+
+    @Test
+    void addCategory_ShouldReturnProblemDetail_WhenDuplicateResource() throws Exception {
+        doThrow(new DuplicateResourceException("Категория с име Maths вече съществува."))
+                .when(this.categoryService).addCategory(any(AddCategoryDTO.class));
+
+        this.mockMvc.perform(post("/api/categories")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "Maths",
+                                  "description": "Description"
+                                }
+                            """))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.title").value("Duplicate resource"))
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.detail").value("Категория с име Maths вече съществува."))
+                .andExpect(jsonPath("$.code").value("DUPLICATE_RESOURCE"))
+                .andExpect(jsonPath("$.type").value("urn:problem:duplicate_resource"))
+                .andExpect(jsonPath("$.instance").value("/api/categories"))
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 
     @Test

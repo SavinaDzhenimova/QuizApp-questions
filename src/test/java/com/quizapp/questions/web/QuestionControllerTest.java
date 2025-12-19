@@ -1,12 +1,8 @@
 package com.quizapp.questions.web;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quizapp.questions.exception.CategoryNotFoundException;
 import com.quizapp.questions.exception.QuestionNotFoundException;
-import com.quizapp.questions.model.dto.category.AddCategoryDTO;
-import com.quizapp.questions.model.dto.category.CategoryPageDTO;
-import com.quizapp.questions.model.dto.category.UpdateCategoryDTO;
 import com.quizapp.questions.model.dto.question.AddQuestionDTO;
 import com.quizapp.questions.model.dto.question.QuestionDTO;
 import com.quizapp.questions.model.dto.question.QuestionPageDTO;
@@ -28,6 +24,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -175,6 +172,33 @@ public class QuestionControllerTest {
                 .andExpect(status().isCreated());
 
         verify(this.questionService, times(1)).addQuestion(addQuestionDTO);
+    }
+
+    @Test
+    void addQuestion_ShouldReturnProblemDetail_WhenDuplicateResource() throws Exception {
+        doThrow(new CategoryNotFoundException(5L))
+                .when(this.questionService).addQuestion(any(AddQuestionDTO.class));
+
+        this.mockMvc.perform(post("/api/questions")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "questionText": "Question",
+                                  "categoryId": "5",
+                                  "correctAnswer": "A",
+                                  "options": "A, B, C, D"
+                                }
+                            """))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.title").value("Category not found"))
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.detail").value("Категория с id 5 не е намерена."))
+                .andExpect(jsonPath("$.code").value("CATEGORY_NOT_FOUND"))
+                .andExpect(jsonPath("$.type").value("urn:problem:category_not_found"))
+                .andExpect(jsonPath("$.instance").value("/api/questions"))
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 
     @Test
