@@ -16,7 +16,6 @@ import org.springframework.data.jpa.domain.Specification;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyLong;
 
 @DataJpaTest
 public class QuestionRepositoryTest {
@@ -27,25 +26,24 @@ public class QuestionRepositoryTest {
     @Autowired
     private QuestionRepository questionRepository;
 
+    private Category category;
     private Question question;
 
     @BeforeEach
     void setUp() {
-        Category category = Category.builder()
+        this.category = Category.builder()
                 .name("Maths")
                 .description("Description")
                 .build();
-        this.entityManager.persist(category);
+        this.category = entityManager.persistFlushFind(this.category);
 
         this.question = Question.builder()
-                .category(category)
+                .category(this.category)
                 .questionText("Question")
                 .correctAnswer("A")
                 .options(List.of("A", "B", "C", "D"))
                 .build();
-        this.questionRepository.save(question);
-
-        this.entityManager.flush();
+        this.question = entityManager.persistFlushFind(this.question);
     }
 
     @Test
@@ -79,7 +77,7 @@ public class QuestionRepositoryTest {
 
     @Test
     void findByCategoryId_ShouldReturnQuestions_WhenCategoryFound() {
-        List<Question> questions = this.questionRepository.findByCategoryId(this.question.getId());
+        List<Question> questions = this.questionRepository.findByCategoryId(this.category.getId());
 
         assertThat(questions).isNotEmpty();
         assertThat(questions.get(0).getQuestionText()).isEqualTo("Question");
@@ -91,7 +89,7 @@ public class QuestionRepositoryTest {
 
     @Test
     void findByCategoryId_ShouldReturnEmptyQuestions_WhenCategoryNotFound() {
-        List<Question> questions = this.questionRepository.findByCategoryId(anyLong());
+        List<Question> questions = this.questionRepository.findByCategoryId(999L);
 
         assertThat(questions).isEmpty();
     }
